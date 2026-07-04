@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore'
+import { onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { subscribeHousehold, taskCollection, completionCollection } from '../household'
 import { sendTelegramNotification } from '../telegram'
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -9,7 +10,8 @@ function getTodayString() {
   return new Date().toISOString().split('T')[0]
 }
 
-export default function MaidView({ onAdminClick }) {
+export default function MaidView({ householdId, onExitStaffMode }) {
+  const [household, setHousehold] = useState(undefined)
   const [tasks, setTasks] = useState([])
   const [completions, setCompletions] = useState({})
   const [loading, setLoading] = useState(true)
@@ -17,7 +19,11 @@ export default function MaidView({ onAdminClick }) {
   const todayDay = DAYS[new Date().getDay()]
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'tasks'), (snap) => {
+    return subscribeHousehold(householdId, setHousehold)
+  }, [householdId])
+
+  useEffect(() => {
+    const unsub = onSnapshot(taskCollection(householdId), (snap) => {
       const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       const todayTasks = all
         .filter(t => t.days?.includes('daily') || t.days?.includes(todayDay))
@@ -26,10 +32,10 @@ export default function MaidView({ onAdminClick }) {
       setLoading(false)
     })
     return unsub
-  }, [todayDay])
+  }, [householdId, todayDay])
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'completions'), (snap) => {
+    const unsub = onSnapshot(completionCollection(householdId), (snap) => {
       const map = {}
       snap.docs.forEach(d => {
         const data = d.data()
@@ -38,11 +44,11 @@ export default function MaidView({ onAdminClick }) {
       setCompletions(map)
     })
     return unsub
-  }, [today])
+  }, [householdId, today])
 
   async function toggleTask(task) {
     const docId = `${today}_${task.id}`
-    const ref = doc(db, 'completions', docId)
+    const ref = doc(db, 'households', householdId, 'completions', docId)
     if (completions[task.id]) {
       await deleteDoc(ref)
     } else {
@@ -52,8 +58,24 @@ export default function MaidView({ onAdminClick }) {
         date: today,
         completedAt: new Date().toISOString(),
       })
-      await sendTelegramNotification(task.title)
+      await sendTelegramNotification(household, task.title)
     }
+  }
+
+  if (household === null) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <p className="text-4xl mb-3">🔗</p>
+        <p className="text-gray-500 font-medium">This link is no longer valid.</p>
+        <p className="text-gray-400 text-sm mt-1">Ask the household owner for a new one.</p>
+        <button
+          onClick={onExitStaffMode}
+          className="mt-6 text-sm text-blue-400 hover:text-blue-600 underline"
+        >
+          Owner sign in
+        </button>
+      </div>
+    )
   }
 
   const completedCount = tasks.filter(t => completions[t.id]).length
@@ -63,22 +85,13 @@ export default function MaidView({ onAdminClick }) {
   return (
     <div className="max-w-md mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Daily Tasks</h1>
-          <p className="text-gray-400 text-sm mt-0.5">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-        <button
-          onClick={onAdminClick}
-          className="text-gray-300 hover:text-gray-500 p-2 transition-colors"
-          title="Admin"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-          </svg>
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {household?.name || 'Daily Tasks'}
+        </h1>
+        <p className="text-gray-400 text-sm mt-0.5">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </p>
       </div>
 
       {/* Progress card */}
@@ -147,6 +160,13 @@ export default function MaidView({ onAdminClick }) {
           })}
         </div>
       )}
+
+      <button
+        onClick={onExitStaffMode}
+        className="block mx-auto mt-10 text-xs text-gray-300 hover:text-gray-500 underline"
+      >
+        Owner sign in
+      </button>
     </div>
   )
 }

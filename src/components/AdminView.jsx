@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
-  collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, writeBatch, query, where
+  onSnapshot, doc, addDoc, updateDoc, deleteDoc, writeBatch,
 } from 'firebase/firestore'
-import { db } from '../firebase'
+import { signOut } from 'firebase/auth'
+import { db, auth } from '../firebase'
+import {
+  taskCollection, completionCollection, updateHousehold, staffLink,
+} from '../household'
 
 const DAY_OPTIONS = [
   { value: 'daily', label: 'Every day' },
@@ -23,18 +27,20 @@ function getTodayString() {
 
 const EMPTY_FORM = { title: '', description: '', days: ['daily'] }
 
-export default function AdminView({ onBack }) {
+export default function AdminView({ household, onHouseholdChange }) {
   const [tasks, setTasks] = useState([])
   const [completions, setCompletions] = useState({})
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [copied, setCopied] = useState(false)
   const today = getTodayString()
   const todayDay = DAYS_OF_WEEK[new Date().getDay()]
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'tasks'), (snap) => {
+    const unsub = onSnapshot(taskCollection(household.id), (snap) => {
       setTasks(
         snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
@@ -42,10 +48,10 @@ export default function AdminView({ onBack }) {
       )
     })
     return unsub
-  }, [])
+  }, [household.id])
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'completions'), (snap) => {
+    const unsub = onSnapshot(completionCollection(household.id), (snap) => {
       const map = {}
       snap.docs.forEach(d => {
         const data = d.data()
@@ -54,7 +60,7 @@ export default function AdminView({ onBack }) {
       setCompletions(map)
     })
     return unsub
-  }, [today])
+  }, [household.id, today])
 
   function openAdd() {
     setEditingTask(null)
@@ -78,9 +84,9 @@ export default function AdminView({ onBack }) {
       order: editingTask?.order ?? tasks.length,
     }
     if (editingTask) {
-      await updateDoc(doc(db, 'tasks', editingTask.id), data)
+      await updateDoc(doc(db, 'households', household.id, 'tasks', editingTask.id), data)
     } else {
-      await addDoc(collection(db, 'tasks'), data)
+      await addDoc(taskCollection(household.id), data)
     }
     setSaving(false)
     setShowForm(false)
@@ -88,14 +94,14 @@ export default function AdminView({ onBack }) {
 
   async function deleteTask(task) {
     if (!window.confirm(`Delete "${task.title}"?`)) return
-    await deleteDoc(doc(db, 'tasks', task.id))
+    await deleteDoc(doc(db, 'households', household.id, 'tasks', task.id))
   }
 
   async function resetToday() {
     if (!window.confirm('Reset all completions for today?')) return
     const batch = writeBatch(db)
     Object.keys(completions).forEach(taskId => {
-      batch.delete(doc(db, 'completions', `${today}_${taskId}`))
+      batch.delete(doc(db, 'households', household.id, 'completions', `${today}_${taskId}`))
     })
     await batch.commit()
   }
@@ -112,6 +118,16 @@ export default function AdminView({ onBack }) {
     })
   }
 
+  async function copyStaffLink() {
+    try {
+      await navigator.clipboard.writeText(staffLink(household.id))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      window.prompt('Copy this link:', staffLink(household.id))
+    }
+  }
+
   const todayTasks = tasks.filter(
     t => t.days?.includes('daily') || t.days?.includes(todayDay)
   )
@@ -120,16 +136,55 @@ export default function AdminView({ onBack }) {
   return (
     <div className="max-w-md mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={onBack}
-          className="text-gray-400 hover:text-gray-600 p-1 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-2xl font-bold text-gray-800">Admin</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-gray-800 truncate">{household.name}</h1>
+          <p className="text-gray-400 text-sm">Owner dashboard</p>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="text-gray-300 hover:text-gray-500 p-2 transition-colors"
+            title="Settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button
+            onClick={() => signOut(auth)}
+            className="text-gray-300 hover:text-gray-500 p-2 transition-colors"
+            title="Sign out"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Staff link card */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+        <p className="font-semibold text-gray-700 text-sm">Share with your maid</p>
+        <p className="text-gray-400 text-xs mt-0.5 mb-3">
+          Send her this link — opening it on her phone shows her task list. Anyone with the link can see and check off tasks, so share it privately.
+        </p>
+        <div className="flex gap-2">
+          <input
+            readOnly
+            value={staffLink(household.id)}
+            onFocus={e => e.target.select()}
+            className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 bg-gray-50 outline-none"
+          />
+          <button
+            onClick={copyStaffLink}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex-shrink-0 transition-colors ${
+              copied ? 'bg-green-100 text-green-600' : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
       </div>
 
       {/* Today's progress summary */}
@@ -269,6 +324,91 @@ export default function AdminView({ onBack }) {
           </div>
         </div>
       )}
+
+      {showSettings && (
+        <SettingsModal
+          household={household}
+          onClose={() => setShowSettings(false)}
+          onSaved={onHouseholdChange}
+        />
+      )}
+    </div>
+  )
+}
+
+function SettingsModal({ household, onClose, onSaved }) {
+  const [name, setName] = useState(household.name)
+  const [botToken, setBotToken] = useState(household.telegramBotToken || '')
+  const [chatId, setChatId] = useState(household.telegramChatId || '')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function save() {
+    if (!name.trim()) return
+    setSaving(true)
+    setError('')
+    const data = {
+      name: name.trim(),
+      telegramBotToken: botToken.trim(),
+      telegramChatId: chatId.trim(),
+    }
+    try {
+      await updateHousehold(household.id, data)
+      onSaved({ ...household, ...data })
+      onClose()
+    } catch {
+      setError('Could not save settings. Please try again.')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4 pb-8">
+      <div className="bg-white rounded-2xl p-5 w-full max-w-md shadow-xl">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">Settings</h3>
+
+        <label className="text-sm font-medium text-gray-600 block mb-1">Household name</label>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 outline-none focus:border-blue-400 text-gray-800"
+        />
+
+        <p className="text-sm font-medium text-gray-600 mb-1">Telegram notifications</p>
+        <p className="text-xs text-gray-400 mb-2">
+          Optional — get a message the moment a task is completed. See the README for how to create a bot.
+        </p>
+        <input
+          value={botToken}
+          onChange={e => setBotToken(e.target.value)}
+          placeholder="Bot token"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-3 outline-none focus:border-blue-400 text-gray-600 text-sm"
+        />
+        <input
+          value={chatId}
+          onChange={e => setChatId(e.target.value)}
+          placeholder="Chat ID"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 outline-none focus:border-blue-400 text-gray-600 text-sm"
+        />
+
+        {error && <p className="text-red-500 text-sm mb-3 text-center">{error}</p>}
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={!name.trim() || saving}
+            className="flex-1 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 font-medium disabled:opacity-40 transition-colors"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

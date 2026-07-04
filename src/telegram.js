@@ -1,6 +1,6 @@
-export async function sendTelegramNotification(taskTitle) {
-  const token = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-  const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID
+export async function sendTelegramNotification(household, taskTitle) {
+  const token = household?.telegramBotToken
+  const chatId = household?.telegramChatId
   if (!token || !chatId) return
 
   try {
