@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// Access model:
+// - Owners sign in with Firebase Auth and fully control their own household.
+// - The maid uses an unguessable share link (the household's random document ID),
+//   so household data and completions are readable/writable by anyone who has
+//   the link — but household IDs cannot be listed or enumerated.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /households/{householdId} {
+      // Direct get by ID is allowed (staff link), but listing is restricted
+      // to the owner querying their own household.
+      allow get: if true;
+      allow list: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+
+      allow create: if request.auth != null
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid;
+
+      function isOwner() {
+        return request.auth != null
+          && get(/databases/$(database)/documents/households/$(householdId)).data.ownerUid == request.auth.uid;
+      }
+
+      // Only the owner manages tasks; the maid (via link) can read them.
+      match /tasks/{taskId} {
+        allow read: if true;
+        allow write: if isOwner();
+      }
+
+      // The maid checks tasks off without an account, so completions are
+      // writable by anyone with the link.
+      match /completions/{completionId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}
