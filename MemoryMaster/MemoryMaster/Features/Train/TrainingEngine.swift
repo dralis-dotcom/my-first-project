@@ -69,17 +69,22 @@ final class TrainingSession: ObservableObject {
     @Published var abstractImages: [AbstractImage] = []
     @Published var historicEvents: [HistoricEvent] = []
 
-    // Recall answers
+    // Recall answers — Numbers
     @Published var digitAnswer: String = ""
+    // Recall answers — Binary (tap grid)
+    @Published var binaryTappedDigits: [Int] = []
+    // Recall answers — Words
     @Published var wordAnswers: [String] = []
-    @Published var cardAnswers: [PlayingCard?] = []
-    /// Names recall uses a *shuffled* display order; answers match shuffledFaces positions.
+    // Recall answers — Cards (tap grid)
+    @Published var shuffledCardsGrid: [PlayingCard] = []
+    @Published var cardTapOrder: [PlayingCard] = []
+    // Recall answers — Names
     @Published var shuffledFaces: [FaceItem] = []
     @Published var faceAnswers: [String] = []
-    /// Images recall
+    // Recall answers — Images
     @Published var shuffledImages: [AbstractImage] = []
     @Published var imageTapOrder: [UInt64] = []
-    /// Historic Dates recall: user types a year string for each event (shown in order).
+    // Recall answers — Historic Dates
     @Published var historicDateAnswers: [String] = []
 
     @Published var correct = 0
@@ -88,23 +93,39 @@ final class TrainingSession: ObservableObject {
 
     init(discipline: Discipline) {
         self.discipline = discipline
+        // Use saved default item count if available, otherwise fall back to built-in default
+        let builtInDefault: Int
         switch discipline {
-        case .numbers:       itemCount = 20; memorizeSeconds = 60
-        case .binary:        itemCount = 30; memorizeSeconds = 60
-        case .words:         itemCount = 10; memorizeSeconds = 60
-        case .cards:         itemCount = 10; memorizeSeconds = 60
-        case .names:         itemCount = 6;  memorizeSeconds = 60
-        case .images:        itemCount = 10; memorizeSeconds = 60
-        case .historicDates: itemCount = 10; memorizeSeconds = 90
+        case .numbers:       builtInDefault = 20
+        case .binary:        builtInDefault = 20
+        case .words:         builtInDefault = 10
+        case .cards:         builtInDefault = 10
+        case .names:         builtInDefault = 6
+        case .images:        builtInDefault = 10
+        case .historicDates: builtInDefault = 10
+        }
+        let key = "defaultItems_\(discipline.rawValue)"
+        let saved = UserDefaults.standard.integer(forKey: key)
+        itemCount = saved > 0 ? saved : builtInDefault
+        memorizeSeconds = discipline == .historicDates ? 90 : 60
+    }
+
+    /// Minimum item count for the setup stepper.
+    var minItems: Int {
+        switch discipline {
+        case .binary: return 8
+        case .cards:  return 5
+        default:      return 4
         }
     }
 
+    /// Maximum item count for the setup stepper.
     var maxItems: Int {
         switch discipline {
         case .numbers:       return 200
-        case .binary:        return 300
+        case .binary:        return 40
         case .words:         return 50
-        case .cards:         return 52
+        case .cards:         return 20
         case .names:         return 16
         case .images:        return 30
         case .historicDates: return HistoricEventsBank.events.count
@@ -129,12 +150,15 @@ final class TrainingSession: ObservableObject {
         timer?.invalidate()
         timer = nil
         switch discipline {
-        case .numbers, .binary:
+        case .numbers:
             digitAnswer = ""
+        case .binary:
+            binaryTappedDigits = []
         case .words:
             wordAnswers = Array(repeating: "", count: words.count)
         case .cards:
-            cardAnswers = Array(repeating: nil, count: cards.count)
+            shuffledCardsGrid = cards.shuffled()
+            cardTapOrder = []
         case .names:
             shuffledFaces = faces.shuffled()
             faceAnswers = Array(repeating: "", count: faces.count)
@@ -179,9 +203,7 @@ final class TrainingSession: ObservableObject {
             abstractImages = []
             while abstractImages.count < itemCount {
                 let image = AbstractImage.random()
-                if seen.insert(image.seed).inserted {
-                    abstractImages.append(image)
-                }
+                if seen.insert(image.seed).inserted { abstractImages.append(image) }
             }
         case .historicDates:
             historicEvents = Array(HistoricEventsBank.events.shuffled().prefix(itemCount))
@@ -190,39 +212,65 @@ final class TrainingSession: ObservableObject {
 
     // MARK: - Scoring
 
-    /// Toggle an image during Images recall.
-    func toggleImageTap(_ image: AbstractImage) {
-        if let index = imageTapOrder.firstIndex(of: image.seed) {
-            imageTapOrder.remove(at: index)
-        } else {
-            imageTapOrder.append(image.seed)
-        }
-    }
-
     private func score() -> Int {
         switch discipline {
-        case .numbers, .binary:
+        case .numbers:
             let typed = digitAnswer.filter(\.isNumber).map { Int(String($0))! }
             return zip(digits, typed).filter { $0 == $1 }.count
+        case .binary:
+            return zip(digits, binaryTappedDigits).filter { $0 == $1 }.count
         case .words:
             return zip(words, wordAnswers).filter {
                 $0.lowercased() == $1.trimmingCharacters(in: .whitespaces).lowercased()
             }.count
         case .cards:
-            return zip(cards, cardAnswers).filter { $0 == $1 }.count
+            return zip(cards, cardTapOrder).filter { $0 == $1 }.count
         case .names:
-            // shuffledFaces order matches faceAnswers order
             return zip(shuffledFaces, faceAnswers).filter {
                 $0.name.lowercased() == $1.trimmingCharacters(in: .whitespaces).lowercased()
             }.count
         case .images:
             return zip(abstractImages, imageTapOrder).filter { $0.seed == $1 }.count
         case .historicDates:
-            // Exact match = 1 point; within 5 years = 1 point (close enough to credit)
             return zip(historicEvents, historicDateAnswers).filter { event, answer in
                 guard let typed = Int(answer.trimmingCharacters(in: .whitespaces)) else { return false }
                 return abs(typed - event.year) <= 5
             }.count
+        }
+    }
+
+    // MARK: - Binary tap helpers
+
+    /// Append a 0 or 1 to the binary recall sequence.
+    func tapBinaryDigit(_ digit: Int) {
+        guard binaryTappedDigits.count < digits.count else { return }
+        binaryTappedDigits.append(digit)
+    }
+
+    /// Remove the last tapped binary digit.
+    func backspaceBinary() {
+        guard !binaryTappedDigits.isEmpty else { return }
+        binaryTappedDigits.removeLast()
+    }
+
+    // MARK: - Cards tap helpers
+
+    /// Toggle a card in/out of the recall sequence.
+    func toggleCardTap(_ card: PlayingCard) {
+        if let index = cardTapOrder.firstIndex(of: card) {
+            cardTapOrder.remove(at: index)
+        } else {
+            cardTapOrder.append(card)
+        }
+    }
+
+    // MARK: - Images tap helpers
+
+    func toggleImageTap(_ image: AbstractImage) {
+        if let index = imageTapOrder.firstIndex(of: image.seed) {
+            imageTapOrder.remove(at: index)
+        } else {
+            imageTapOrder.append(image.seed)
         }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var selectedTab = 0
 
     var body: some View {
@@ -26,8 +27,17 @@ struct RootView: View {
                 selectedTab = 0
             }
         }
+        // Show onboarding as a full-screen cover on first launch
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasCompletedOnboarding },
+            set: { _ in }
+        )) {
+            OnboardingView()
+        }
     }
 }
+
+// MARK: - More / Progress tab
 
 struct MoreView: View {
     var body: some View {
