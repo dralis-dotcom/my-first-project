@@ -56,3 +56,22 @@ targets:
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
+
+  # UITest target used by `fastlane screenshots` (snapshot) and CI.
+  MemoryMasterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: MemoryMasterUITests
+    info:
+      path: MemoryMasterUITests/Info.plist
+      properties:
+        CFBundleDisplayName: MemoryMasterUITests
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MemoryMasterUITests
+        TEST_HOST: ""                          # UI tests run in a separate process
+    dependencies:
+      - target: MemoryMaster

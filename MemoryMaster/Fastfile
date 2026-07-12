@@ -1,0 +1,102 @@
+# Fastfile – MemoryMaster
+# Requires: gem install fastlane  (or: brew install fastlane)
+#
+# Usage:
+#   fastlane screenshots   → auto-generate App Store screenshots via snapshot
+#   fastlane beta          → build & upload to TestFlight
+#   fastlane release       → submit to App Store
+
+default_platform(:ios)
+
+platform :ios do
+
+  # ── Shared configuration ────────────────────────────────────────────────────
+  APP_ID        = "com.dralis.MemoryMaster"
+  SCHEME        = "MemoryMaster"
+  WORKSPACE     = "MemoryMaster.xcodeproj"   # use .xcworkspace if CocoaPods
+  XCODEPROJ     = "MemoryMaster.xcodeproj"
+
+  # ── Lane: screenshots ───────────────────────────────────────────────────────
+  # Runs snapshot (UI tests) to capture all App Store screenshots.
+  # Output lands in fastlane/screenshots/.
+  desc "Generate App Store screenshots via snapshot"
+  lane :screenshots do
+    snapshot(
+      scheme:              "MemoryMasterUITests",
+      xcargs:              "-allowProvisioningUpdates",
+      output_directory:    "./fastlane/screenshots",
+      clear_previous_screenshots: true,
+      override_status_bar: true,           # clean status bar (9:41 AM)
+      localize_simulator:  true
+    )
+    frameit(silver: false)                 # optional: add device frames
+  end
+
+  # ── Lane: beta ──────────────────────────────────────────────────────────────
+  # Increments the build number, builds, signs, and ships to TestFlight.
+  desc "Build and upload a new beta build to TestFlight"
+  lane :beta do
+    # Bump build number from latest TestFlight build
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1
+    )
+
+    # Sync code-signing certificates & provisioning profiles (read-only)
+    sync_code_signing(
+      type:        "appstore",
+      readonly:    true,
+      app_identifier: APP_ID
+    )
+
+    # Build the app
+    build_app(
+      scheme:      SCHEME,
+      export_method: "app-store",
+      xcargs:      "-allowProvisioningUpdates"
+    )
+
+    # Upload to TestFlight (no immediate external release)
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      changelog: "Latest beta build – see Git log for details."
+    )
+
+    # Notify via Slack (optional – remove if not using Slack)
+    # slack(message: "MemoryMaster beta uploaded to TestFlight ✅")
+  end
+
+  # ── Lane: release ───────────────────────────────────────────────────────────
+  # Bumps the version, uploads metadata + screenshots, and submits for review.
+  desc "Submit a new release to the App Store"
+  lane :release do
+    # Ensure clean working tree
+    ensure_git_status_clean
+
+    # Bump patch version (or pass version: "x.y.z" explicitly)
+    increment_version_number(bump_type: "patch")
+    increment_build_number(build_number: Time.now.strftime("%Y%m%d%H%M"))
+
+    sync_code_signing(type: "appstore", readonly: true, app_identifier: APP_ID)
+
+    build_app(
+      scheme:        SCHEME,
+      export_method: "app-store",
+      xcargs:        "-allowProvisioningUpdates"
+    )
+
+    # Upload metadata, screenshots, and binary
+    deliver(
+      submit_for_review:           true,
+      automatic_release:           false,   # set true for auto-release
+      force:                       true,    # skip HTML report prompt
+      skip_screenshots:            false,
+      skip_metadata:               false,
+      reject_if_possible:          true     # pull back any pending review build
+    )
+
+    # Tag the release commit
+    add_git_tag(tag: "v#{get_version_number}")
+    push_git_tags
+  end
+
+end

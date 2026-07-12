@@ -1,0 +1,33 @@
+# Snapfile – MemoryMaster
+# Configures the `snapshot` action (fastlane screenshots lane).
+#
+# Docs: https://docs.fastlane.tools/actions/snapshot/
+
+# ── Devices ─────────────────────────────────────────────────────────────────
+# App Store requires at minimum: 6.9" (iPhone 16 Pro Max) and 5.5" (iPhone 8 Plus).
+# Add iPad sizes below if you ship a universal binary.
+devices([
+  "iPhone 16 Pro Max",
+  "iPhone 8 Plus"
+])
+
+# ── Locales ──────────────────────────────────────────────────────────────────
+languages([
+  "en-US"
+  # Add more locales here if you localise the app, e.g. "ar-SA", "fr-FR"
+])
+
+# ── Scheme & output ──────────────────────────────────────────────────────────
+scheme("MemoryMasterUITests")
+output_directory("./fastlane/screenshots")
+clear_previous_screenshots(true)
+
+# ── Status bar ───────────────────────────────────────────────────────────────
+# Overrides to show a clean 9:41 AM / full signal / full battery status bar.
+override_status_bar(true)
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+# Stop after first failure to surface issues quickly
+stop_after_first_error(false)
+erase_simulator(false)
+headless(true)       # run simulator without UI (faster in CI)
