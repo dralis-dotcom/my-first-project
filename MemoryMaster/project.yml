@@ -16,9 +16,42 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.example.MemoryMaster
+            CFBundleURLSchemes:
+              - memorymaster
     settings:
       base:
         TARGETED_DEVICE_FAMILY: "1"
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: 1
         SWIFT_VERSION: "5.9"
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MemoryMaster
+    entitlements:
+      path: MemoryMaster/MemoryMaster.entitlements
+    dependencies:
+      - target: MemoryMasterWidget
+
+  MemoryMasterWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: MemoryMasterWidget
+      - path: MemoryMaster/Data/StreakManager.swift
+    info:
+      path: MemoryMasterWidget/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "5.9"
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MemoryMasterWidget
+    entitlements:
+      path: MemoryMasterWidget/MemoryMasterWidget.entitlements
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework

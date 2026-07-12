@@ -20,11 +20,6 @@ struct PlayingCard: Hashable, Identifiable {
 struct FaceItem: Hashable, Identifiable {
     let id = UUID()
     let name: String
-    /// Emoji stand-in for a face (works fully offline).
-    let face: String
-
-    static let faces = ["🧔", "👩‍🦰", "👨‍🦱", "👩‍🦳", "👨🏾", "👩🏻", "👴", "👵",
-                        "👨‍🦲", "👩‍🦱", "🧑🏽", "👱‍♀️", "🧓🏿", "👨🏻‍🦰", "👩🏾‍🦱", "🧑‍🦳"]
 }
 
 /// Deterministic generator so an abstract image can be rebuilt from its seed.
@@ -43,7 +38,6 @@ struct SeededGenerator: RandomNumberGenerator {
 }
 
 /// One procedurally generated abstract image (Memory League "Images" style).
-/// Everything about its appearance derives from the seed.
 struct AbstractImage: Hashable, Identifiable {
     let seed: UInt64
     var id: UInt64 { seed }
@@ -57,8 +51,7 @@ enum TrainingPhase {
     case setup, memorize, recall, results
 }
 
-/// Session state machine for all competition disciplines:
-/// setup -> memorize (timed) -> recall (input) -> results (score).
+/// Session state machine for all competition disciplines.
 @MainActor
 final class TrainingSession: ObservableObject {
     let discipline: Discipline
@@ -74,16 +67,20 @@ final class TrainingSession: ObservableObject {
     @Published var cards: [PlayingCard] = []
     @Published var faces: [FaceItem] = []
     @Published var abstractImages: [AbstractImage] = []
+    @Published var historicEvents: [HistoricEvent] = []
 
     // Recall answers
     @Published var digitAnswer: String = ""
     @Published var wordAnswers: [String] = []
     @Published var cardAnswers: [PlayingCard?] = []
+    /// Names recall uses a *shuffled* display order; answers match shuffledFaces positions.
+    @Published var shuffledFaces: [FaceItem] = []
     @Published var faceAnswers: [String] = []
-    /// Recall state for Images: the shuffled display order, and the seeds
-    /// the user has tapped so far (their reconstruction of the sequence).
+    /// Images recall
     @Published var shuffledImages: [AbstractImage] = []
     @Published var imageTapOrder: [UInt64] = []
+    /// Historic Dates recall: user types a year string for each event (shown in order).
+    @Published var historicDateAnswers: [String] = []
 
     @Published var correct = 0
 
@@ -92,23 +89,25 @@ final class TrainingSession: ObservableObject {
     init(discipline: Discipline) {
         self.discipline = discipline
         switch discipline {
-        case .numbers: itemCount = 20; memorizeSeconds = 60
-        case .binary: itemCount = 30; memorizeSeconds = 60
-        case .words: itemCount = 10; memorizeSeconds = 60
-        case .cards: itemCount = 10; memorizeSeconds = 60
-        case .names: itemCount = 6; memorizeSeconds = 60
-        case .images: itemCount = 10; memorizeSeconds = 60
+        case .numbers:       itemCount = 20; memorizeSeconds = 60
+        case .binary:        itemCount = 30; memorizeSeconds = 60
+        case .words:         itemCount = 10; memorizeSeconds = 60
+        case .cards:         itemCount = 10; memorizeSeconds = 60
+        case .names:         itemCount = 6;  memorizeSeconds = 60
+        case .images:        itemCount = 10; memorizeSeconds = 60
+        case .historicDates: itemCount = 10; memorizeSeconds = 90
         }
     }
 
     var maxItems: Int {
         switch discipline {
-        case .numbers: return 200
-        case .binary: return 300
-        case .words: return 50
-        case .cards: return 52
-        case .names: return 16
-        case .images: return 30
+        case .numbers:       return 200
+        case .binary:        return 300
+        case .words:         return 50
+        case .cards:         return 52
+        case .names:         return 16
+        case .images:        return 30
+        case .historicDates: return HistoricEventsBank.events.count
         }
     }
 
@@ -137,10 +136,13 @@ final class TrainingSession: ObservableObject {
         case .cards:
             cardAnswers = Array(repeating: nil, count: cards.count)
         case .names:
+            shuffledFaces = faces.shuffled()
             faceAnswers = Array(repeating: "", count: faces.count)
         case .images:
             shuffledImages = abstractImages.shuffled()
             imageTapOrder = []
+        case .historicDates:
+            historicDateAnswers = Array(repeating: "", count: historicEvents.count)
         }
         phase = .recall
     }
@@ -153,6 +155,8 @@ final class TrainingSession: ObservableObject {
                               correct: correct,
                               memorizeSeconds: memorizeSeconds)
     }
+
+    // MARK: - Generation
 
     private func generate() {
         switch discipline {
@@ -167,10 +171,8 @@ final class TrainingSession: ObservableObject {
         case .names:
             let names = Array(Set(WordBank.firstNames).map { $0 }.shuffled())
             let lasts = WordBank.lastNames.shuffled()
-            let emojis = FaceItem.faces.shuffled()
             faces = (0..<itemCount).map { i in
-                FaceItem(name: "\(names[i % names.count]) \(lasts[i % lasts.count])",
-                         face: emojis[i % emojis.count])
+                FaceItem(name: "\(names[i % names.count]) \(lasts[i % lasts.count])")
             }
         case .images:
             var seen = Set<UInt64>()
@@ -181,11 +183,14 @@ final class TrainingSession: ObservableObject {
                     abstractImages.append(image)
                 }
             }
+        case .historicDates:
+            historicEvents = Array(HistoricEventsBank.events.shuffled().prefix(itemCount))
         }
     }
 
-    /// Toggle an image during Images recall: tap to append it to the
-    /// reconstructed sequence, tap again to remove it.
+    // MARK: - Scoring
+
+    /// Toggle an image during Images recall.
     func toggleImageTap(_ image: AbstractImage) {
         if let index = imageTapOrder.firstIndex(of: image.seed) {
             imageTapOrder.remove(at: index)
@@ -206,11 +211,18 @@ final class TrainingSession: ObservableObject {
         case .cards:
             return zip(cards, cardAnswers).filter { $0 == $1 }.count
         case .names:
-            return zip(faces, faceAnswers).filter {
+            // shuffledFaces order matches faceAnswers order
+            return zip(shuffledFaces, faceAnswers).filter {
                 $0.name.lowercased() == $1.trimmingCharacters(in: .whitespaces).lowercased()
             }.count
         case .images:
             return zip(abstractImages, imageTapOrder).filter { $0.seed == $1 }.count
+        case .historicDates:
+            // Exact match = 1 point; within 5 years = 1 point (close enough to credit)
+            return zip(historicEvents, historicDateAnswers).filter { event, answer in
+                guard let typed = Int(answer.trimmingCharacters(in: .whitespaces)) else { return false }
+                return abs(typed - event.year) <= 5
+            }.count
         }
     }
 }
