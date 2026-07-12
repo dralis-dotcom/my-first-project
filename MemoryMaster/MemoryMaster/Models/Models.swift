@@ -127,23 +127,25 @@ struct MindMap: Identifiable, Codable {
 // MARK: - Training results
 
 enum Discipline: String, Codable, CaseIterable, Identifiable {
-    case numbers = "Numbers"
-    case cards = "Cards"
-    case words = "Words"
-    case binary = "Binary"
-    case names = "Names & Faces"
-    case images = "Images"
+    case numbers       = "Numbers"
+    case cards         = "Cards"
+    case words         = "Words"
+    case binary        = "Binary"
+    case names         = "Names & Faces"
+    case images        = "Images"
+    case historicDates = "Historic Dates"
 
     var id: String { rawValue }
 
     var symbol: String {
         switch self {
-        case .numbers: return "number.square.fill"
-        case .cards: return "suit.spade.fill"
-        case .words: return "text.book.closed.fill"
-        case .binary: return "01.square.fill"
-        case .names: return "person.2.fill"
-        case .images: return "photo.on.rectangle.angled"
+        case .numbers:       return "number.square.fill"
+        case .cards:         return "suit.spade.fill"
+        case .words:         return "text.book.closed.fill"
+        case .binary:        return "01.square.fill"
+        case .names:         return "person.2.fill"
+        case .images:        return "photo.on.rectangle.angled"
+        case .historicDates: return "calendar.badge.clock"
         }
     }
 }

@@ -108,6 +108,7 @@ final class AppStore: ObservableObject {
 
     func addResult(_ result: TrainingResult) {
         results.append(result)
+        StreakManager.shared.recordSession()
     }
 
     func updateDeck(_ deck: Deck) {
