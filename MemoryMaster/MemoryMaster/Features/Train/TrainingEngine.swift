@@ -27,6 +27,32 @@ struct FaceItem: Hashable, Identifiable {
                         "👨‍🦲", "👩‍🦱", "🧑🏽", "👱‍♀️", "🧓🏿", "👨🏻‍🦰", "👩🏾‍🦱", "🧑‍🦳"]
 }
 
+/// Deterministic generator so an abstract image can be rebuilt from its seed.
+struct SeededGenerator: RandomNumberGenerator {
+    private var state: UInt64
+
+    init(seed: UInt64) { state = seed &+ 0x9E37_79B9_7F4A_7C15 }
+
+    mutating func next() -> UInt64 {
+        state &+= 0x9E37_79B9_7F4A_7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+        return z ^ (z >> 31)
+    }
+}
+
+/// One procedurally generated abstract image (Memory League "Images" style).
+/// Everything about its appearance derives from the seed.
+struct AbstractImage: Hashable, Identifiable {
+    let seed: UInt64
+    var id: UInt64 { seed }
+
+    static func random() -> AbstractImage {
+        AbstractImage(seed: UInt64.random(in: UInt64.min...UInt64.max))
+    }
+}
+
 enum TrainingPhase {
     case setup, memorize, recall, results
 }
@@ -47,12 +73,17 @@ final class TrainingSession: ObservableObject {
     @Published var words: [String] = []
     @Published var cards: [PlayingCard] = []
     @Published var faces: [FaceItem] = []
+    @Published var abstractImages: [AbstractImage] = []
 
     // Recall answers
     @Published var digitAnswer: String = ""
     @Published var wordAnswers: [String] = []
     @Published var cardAnswers: [PlayingCard?] = []
     @Published var faceAnswers: [String] = []
+    /// Recall state for Images: the shuffled display order, and the seeds
+    /// the user has tapped so far (their reconstruction of the sequence).
+    @Published var shuffledImages: [AbstractImage] = []
+    @Published var imageTapOrder: [UInt64] = []
 
     @Published var correct = 0
 
@@ -66,6 +97,7 @@ final class TrainingSession: ObservableObject {
         case .words: itemCount = 10; memorizeSeconds = 60
         case .cards: itemCount = 10; memorizeSeconds = 60
         case .names: itemCount = 6; memorizeSeconds = 60
+        case .images: itemCount = 10; memorizeSeconds = 60
         }
     }
 
@@ -76,6 +108,7 @@ final class TrainingSession: ObservableObject {
         case .words: return 50
         case .cards: return 52
         case .names: return 16
+        case .images: return 30
         }
     }
 
@@ -105,6 +138,9 @@ final class TrainingSession: ObservableObject {
             cardAnswers = Array(repeating: nil, count: cards.count)
         case .names:
             faceAnswers = Array(repeating: "", count: faces.count)
+        case .images:
+            shuffledImages = abstractImages.shuffled()
+            imageTapOrder = []
         }
         phase = .recall
     }
@@ -136,6 +172,25 @@ final class TrainingSession: ObservableObject {
                 FaceItem(name: "\(names[i % names.count]) \(lasts[i % lasts.count])",
                          face: emojis[i % emojis.count])
             }
+        case .images:
+            var seen = Set<UInt64>()
+            abstractImages = []
+            while abstractImages.count < itemCount {
+                let image = AbstractImage.random()
+                if seen.insert(image.seed).inserted {
+                    abstractImages.append(image)
+                }
+            }
+        }
+    }
+
+    /// Toggle an image during Images recall: tap to append it to the
+    /// reconstructed sequence, tap again to remove it.
+    func toggleImageTap(_ image: AbstractImage) {
+        if let index = imageTapOrder.firstIndex(of: image.seed) {
+            imageTapOrder.remove(at: index)
+        } else {
+            imageTapOrder.append(image.seed)
         }
     }
 
@@ -154,6 +209,8 @@ final class TrainingSession: ObservableObject {
             return zip(faces, faceAnswers).filter {
                 $0.name.lowercased() == $1.trimmingCharacters(in: .whitespaces).lowercased()
             }.count
+        case .images:
+            return zip(abstractImages, imageTapOrder).filter { $0.seed == $1 }.count
         }
     }
 }
