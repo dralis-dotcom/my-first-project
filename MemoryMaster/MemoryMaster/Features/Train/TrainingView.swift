@@ -66,6 +66,8 @@ struct SetupPhaseView: View {
             return "Assign each card a person (e.g. King of Hearts = your father figure). Place pairs of cards as person + action scenes along a journey."
         case .names:
             return "Pick a striking facial feature, then link the sound of the name to a vivid image anchored on that feature."
+        case .images:
+            return "Name each image aloud in your head (\"red diamond on mint\"), then chain the names into a story or place them along a journey. In recall, tap the images in their original order."
         }
     }
 }
@@ -122,6 +124,18 @@ struct MemorizePhaseView: View {
                         }
                     }
                     .padding(.vertical)
+                case .images:
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
+                        ForEach(Array(session.abstractImages.enumerated()), id: \.element.id) { index, image in
+                            VStack(spacing: 4) {
+                                AbstractImageView(image: image)
+                                Text("\(index + 1)")
+                                    .font(.caption.monospacedDigit().bold())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding()
                 }
             }
 
@@ -192,6 +206,38 @@ struct RecallPhaseView: View {
                         }
                         .padding(.horizontal)
                     }
+                case .images:
+                    Text("Tap the images in their original order")
+                        .font(.headline)
+                    Text("Selected: \(session.imageTapOrder.count)/\(session.abstractImages.count) — tap again to unselect")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
+                        ForEach(session.shuffledImages) { image in
+                            Button {
+                                session.toggleImageTap(image)
+                            } label: {
+                                AbstractImageView(image: image)
+                                    .overlay(alignment: .topTrailing) {
+                                        if let position = session.imageTapOrder.firstIndex(of: image.seed) {
+                                            Text("\(position + 1)")
+                                                .font(.caption.bold().monospacedDigit())
+                                                .foregroundStyle(.white)
+                                                .frame(width: 24, height: 24)
+                                                .background(Circle().fill(.blue))
+                                                .padding(4)
+                                        }
+                                    }
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(session.imageTapOrder.contains(image.seed) ? .blue : .clear,
+                                                    lineWidth: 3)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal)
                 }
 
                 Button("Check answers") { onFinish() }

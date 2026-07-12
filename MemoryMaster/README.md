@@ -11,6 +11,7 @@ Timed memorize → recall → score sessions for the classic memory-sport discip
 - **Words** — random concrete nouns
 - **Binary** — 0/1 sequences
 - **Names & Faces** — match names to faces
+- **Images** — memorize a sequence of procedurally generated abstract images, then tap them back into order (Memory League style)
 Configurable item count and memorization time, with per-discipline technique tips and score history.
 
 ### 📚 Study tool (Study tab)

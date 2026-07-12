@@ -132,6 +132,7 @@ enum Discipline: String, Codable, CaseIterable, Identifiable {
     case words = "Words"
     case binary = "Binary"
     case names = "Names & Faces"
+    case images = "Images"
 
     var id: String { rawValue }
 
@@ -142,6 +143,7 @@ enum Discipline: String, Codable, CaseIterable, Identifiable {
         case .words: return "text.book.closed.fill"
         case .binary: return "01.square.fill"
         case .names: return "person.2.fill"
+        case .images: return "photo.on.rectangle.angled"
         }
     }
 }
