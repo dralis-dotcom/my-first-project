@@ -3,6 +3,9 @@ import Foundation
 /// Tracks consecutive days of training practice.
 /// Data lives in an App Group so the home-screen widget can read it
 /// without launching the main app.
+///
+/// When iCloud sync is enabled (`ICloudSyncManager.shared.isEnabled`),
+/// every write is also mirrored to `NSUbiquitousKeyValueStore`.
 final class StreakManager {
     static let shared = StreakManager()
 
@@ -11,27 +14,38 @@ final class StreakManager {
         UserDefaults(suiteName: suiteName) ?? .standard
     }
 
-    private enum Key {
-        static let current      = "streak.current"
-        static let longest      = "streak.longest"
-        static let lastDate     = "streak.lastDate"
+    // Keys are intentionally `internal` so ICloudSyncManager can reference them.
+    enum Key {
+        static let current  = "streak.current"
+        static let longest  = "streak.longest"
+        static let lastDate = "streak.lastDate"
     }
 
     // MARK: - Accessors
 
     var currentStreak: Int {
         get { defaults.integer(forKey: Key.current) }
-        set { defaults.set(newValue, forKey: Key.current) }
+        set {
+            defaults.set(newValue, forKey: Key.current)
+            ICloudSyncManager.shared.set(newValue, forKey: Key.current)
+        }
     }
 
     var longestStreak: Int {
         get { defaults.integer(forKey: Key.longest) }
-        set { defaults.set(newValue, forKey: Key.longest) }
+        set {
+            defaults.set(newValue, forKey: Key.longest)
+            ICloudSyncManager.shared.set(newValue, forKey: Key.longest)
+        }
     }
 
-    private var lastPracticeDate: Date? {
+    // Exposed as `internal` so ICloudSyncManager can read/write it during merge.
+    var lastPracticeDate: Date? {
         get { defaults.object(forKey: Key.lastDate) as? Date }
-        set { defaults.set(newValue, forKey: Key.lastDate) }
+        set {
+            defaults.set(newValue, forKey: Key.lastDate)
+            ICloudSyncManager.shared.set(newValue, forKey: Key.lastDate)
+        }
     }
 
     var practicedToday: Bool {
@@ -48,7 +62,7 @@ final class StreakManager {
 
         if let last = lastPracticeDate {
             if cal.isDateInToday(last) {
-                // Already practiced today — no change, just update timestamp
+                // Already practiced today — just update timestamp
             } else if let yesterday = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: now)),
                       cal.isDate(last, inSameDayAs: yesterday) {
                 // Practiced yesterday — extend streak

@@ -1,0 +1,84 @@
+================================================================================
+  MEMORYMASTER — APP STORE METADATA
+  Last updated: 2026-07-12
+================================================================================
+
+APP NAME
+  MemoryMaster
+
+SUBTITLE
+  Train Your Memory Daily
+
+--------------------------------------------------------------------------------
+DESCRIPTION (English — ~200 words)
+--------------------------------------------------------------------------------
+MemoryMaster is the ultimate daily training companion for anyone serious about
+developing a world-class memory. Built around the proven techniques of memory
+champions — including Dominic O'Brien's Dominic System and Tony Buzan's Mind
+Mapping — it gives you a structured gym for your brain, right in your pocket.
+
+Train across seven classic memory-sport disciplines every day:
+• Numbers — encode random digit strings using Dominic pairs
+• Cards — memorise a shuffled deck at competition speed
+• Words — recall lists of random concrete nouns in order
+• Binary — blaze through 0/1 sequences
+• Names & Faces — pair names to faces like a networking pro
+• Images — remember and replay procedurally generated abstract images
+• Historic Dates — lock world events to their exact years
+
+Each session is timed, scored, and tracked. A built-in spaced-repetition
+flashcard engine (SM-2) keeps your Dominic table sharp, and one-tap AI
+mnemonics (Claude + DALL-E) invent vivid images on demand.
+
+Streak tracking, a home-screen widget, and optional iCloud sync across all
+your devices keep you accountable day after day.
+
+No subscription. No ads. Just pure memory training.
+
+--------------------------------------------------------------------------------
+KEYWORDS
+--------------------------------------------------------------------------------
+memory,brain training,recall,memorization,mnemonics,memory palace,Dominic System,
+mind map,spaced repetition,memory sport,flashcards,concentration,cognitive,focus
+
+--------------------------------------------------------------------------------
+CATEGORY
+  Primary:   Education
+  Secondary: Productivity
+
+--------------------------------------------------------------------------------
+AGE RATING
+  4+  (no objectionable content)
+
+--------------------------------------------------------------------------------
+PRIVACY — DATA COLLECTION
+  MemoryMaster does not collect, store, or share any personal data.
+
+  • All user-generated content (Dominic table, decks, mind maps, session
+    results) is stored exclusively on-device in the iOS app sandbox.
+  • Streak data can optionally be synced via iCloud Key-Value Storage
+    (user's own iCloud account; Apple handles storage).
+  • API keys (Anthropic, OpenAI) are stored in the iOS Keychain and are
+    transmitted only to the respective third-party API.
+  • No analytics, no advertising identifiers, no crash reporters.
+
+  NSPrivacyAccessedAPITypes: none
+  Data linked to user: none
+  Data used to track: none
+
+--------------------------------------------------------------------------------
+SUPPORT URL
+  https://github.com/dralis-dotcom/my-first-project
+
+--------------------------------------------------------------------------------
+MARKETING URL
+  (leave blank until landing page is live)
+
+--------------------------------------------------------------------------------
+REVIEW NOTES FOR APP REVIEW TEAM
+  - The app requires no account or login to use.
+  - AI features (mnemonic generation, Dominic pictures) require the user to
+    supply their own Anthropic and/or OpenAI API keys in Settings. These are
+    optional; all other features work fully offline.
+  - iCloud sync is opt-in via Settings → iCloud → "Sync streak with iCloud".
+================================================================================

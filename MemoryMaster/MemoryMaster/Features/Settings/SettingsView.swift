@@ -12,14 +12,17 @@ struct SettingsView: View {
     @AppStorage("reminderHour")    private var reminderHour    = 9
     @AppStorage("reminderMinute")  private var reminderMinute  = 0
 
+    // iCloud sync (stored in standard UserDefaults, not AppStorage, so only local)
+    @State private var iCloudSyncEnabled = ICloudSyncManager.shared.isEnabled
+
     // Default session lengths per discipline
-    @AppStorage("defaultItems_Numbers")       private var defaultNumbers = 20
-    @AppStorage("defaultItems_Binary")        private var defaultBinary  = 20
-    @AppStorage("defaultItems_Words")         private var defaultWords   = 10
-    @AppStorage("defaultItems_Cards")         private var defaultCards   = 10
-    @AppStorage("defaultItems_Names & Faces") private var defaultNames   = 6
-    @AppStorage("defaultItems_Images")        private var defaultImages  = 10
-    @AppStorage("defaultItems_Historic Dates") private var defaultDates  = 10
+    @AppStorage("defaultItems_Numbers")        private var defaultNumbers = 20
+    @AppStorage("defaultItems_Binary")         private var defaultBinary  = 20
+    @AppStorage("defaultItems_Words")          private var defaultWords   = 10
+    @AppStorage("defaultItems_Cards")          private var defaultCards   = 10
+    @AppStorage("defaultItems_Names & Faces")  private var defaultNames   = 6
+    @AppStorage("defaultItems_Images")         private var defaultImages  = 10
+    @AppStorage("defaultItems_Historic Dates") private var defaultDates   = 10
 
     /// Computed date binding so DatePicker writes back to AppStorage ints.
     private var reminderDate: Binding<Date> {
@@ -54,15 +57,32 @@ struct SettingsView: View {
                 Text("Sends a daily notification at the chosen time. Requires notification permissions.")
             }
 
+            // MARK: iCloud Sync
+            Section {
+                Toggle("Sync streak with iCloud", isOn: $iCloudSyncEnabled)
+                    .onChange(of: iCloudSyncEnabled) { _, enabled in
+                        ICloudSyncManager.shared.isEnabled = enabled
+                        if enabled {
+                            // Seed iCloud with the best local data on first enable
+                            ICloudSyncManager.shared.pushLocalStreak()
+                            ICloudSyncManager.shared.pullToLocal()
+                        }
+                    }
+            } header: {
+                Text("iCloud")
+            } footer: {
+                Text("Keeps your streak and session history in sync across all your iPhones signed in to the same Apple ID. Uses iCloud Key-Value Storage — no personal data is shared.")
+            }
+
             // MARK: Default session lengths
             Section {
-                Stepper("Numbers: \(defaultNumbers)",  value: $defaultNumbers,  in: 4...200, step: 10)
-                Stepper("Binary: \(defaultBinary)",    value: $defaultBinary,   in: 8...40,  step: 4)
-                Stepper("Words: \(defaultWords)",      value: $defaultWords,    in: 4...50,  step: 2)
-                Stepper("Cards: \(defaultCards)",      value: $defaultCards,    in: 5...20,  step: 1)
-                Stepper("Names: \(defaultNames)",      value: $defaultNames,    in: 4...16,  step: 2)
-                Stepper("Images: \(defaultImages)",    value: $defaultImages,   in: 4...30,  step: 2)
-                Stepper("Historic Dates: \(defaultDates)", value: $defaultDates, in: 4...50, step: 2)
+                Stepper("Numbers: \(defaultNumbers)",      value: $defaultNumbers,  in: 4...200, step: 10)
+                Stepper("Binary: \(defaultBinary)",        value: $defaultBinary,   in: 8...40,  step: 4)
+                Stepper("Words: \(defaultWords)",          value: $defaultWords,    in: 4...50,  step: 2)
+                Stepper("Cards: \(defaultCards)",          value: $defaultCards,    in: 5...20,  step: 1)
+                Stepper("Names: \(defaultNames)",          value: $defaultNames,    in: 4...16,  step: 2)
+                Stepper("Images: \(defaultImages)",        value: $defaultImages,   in: 4...30,  step: 2)
+                Stepper("Historic Dates: \(defaultDates)", value: $defaultDates,    in: 4...50,  step: 2)
             } header: {
                 Text("Default Session Length")
             } footer: {
@@ -115,8 +135,9 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .onAppear {
-            anthropicKey = KeychainHelper.read(AIService.anthropicKeyName)
-            openAIKey    = KeychainHelper.read(AIService.openAIKeyName)
+            anthropicKey        = KeychainHelper.read(AIService.anthropicKeyName)
+            openAIKey           = KeychainHelper.read(AIService.openAIKeyName)
+            iCloudSyncEnabled   = ICloudSyncManager.shared.isEnabled
         }
     }
 
