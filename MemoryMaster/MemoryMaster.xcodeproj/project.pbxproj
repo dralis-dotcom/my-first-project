@@ -32,6 +32,7 @@
 		A1BD53999A8D4DD34BE4208F /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8FBC55E2062F58FCCBB0E4A /* SwiftUI.framework */; };
 		A9F9E828E31365717DDFFA46 /* StudyHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C28F32E372B940BC4CB7635 /* StudyHomeView.swift */; };
 		AAE9BD71AF0673A39C7B7926 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF4C8CAEAB5B460C0260DC2 /* SettingsView.swift */; };
+		B919617A4478A64B2139E19D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41047E31B66749ADB6FADA66 /* OnboardingView.swift */; };
 		BA0E9CB1FCF31C53C0852DA7 /* DominicTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530FCDA8EFF42D5C6FD03BBE /* DominicTableView.swift */; };
 		BA265D4904EDD8A6E48FBFAE /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7764BC20091F73E700FF2EC9 /* AppStore.swift */; };
 		C38E1DFDBABC649116B50301 /* StreakManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBF05799381E0B6F17CDF6B /* StreakManager.swift */; };
@@ -77,6 +78,7 @@
 		2D51C054BA79A8AF9DB77A47 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		3BBF05799381E0B6F17CDF6B /* StreakManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakManager.swift; sourceTree = "<group>"; };
 		3CC00D4E81FA4C4CC5A7C9B2 /* UIHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHelpers.swift; sourceTree = "<group>"; };
+		41047E31B66749ADB6FADA66 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		46BF377D2143C63CB06A0143 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
 		4BB401219B1645BD5D8B434D /* DominicHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DominicHomeView.swift; sourceTree = "<group>"; };
 		4FD9098F1203BD07BC02F7A6 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
@@ -241,6 +243,14 @@
 			path = MemoryMaster;
 			sourceTree = "<group>";
 		};
+		82C2DC46A2141903244B9D51 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				41047E31B66749ADB6FADA66 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
 		8B41CC339717483EC1483D27 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -262,6 +272,7 @@
 			children = (
 				389915A2219BD02C8740FFAA /* Dominic */,
 				4CDF53FC1F15F157CCC289AC /* MindMap */,
+				82C2DC46A2141903244B9D51 /* Onboarding */,
 				8B41CC339717483EC1483D27 /* Settings */,
 				24634BC988270038564DB2C2 /* Stats */,
 				1F445D72243799F7564E911A /* Study */,
@@ -395,6 +406,7 @@
 				554F424B3592554317A1617D /* MindMapEditorView.swift in Sources */,
 				499921C751774CD232454DFE /* MindMapListView.swift in Sources */,
 				9D6E35784C0E4D0B2E5EA63C /* Models.swift in Sources */,
+				B919617A4478A64B2139E19D /* OnboardingView.swift in Sources */,
 				42D0AD94B6CB42B806D2B3E9 /* ReviewView.swift in Sources */,
 				3AC3DBF9227EA9E738227DA2 /* RootView.swift in Sources */,
 				0F41F15D3285FD6C51B8FFAB /* SM2Scheduler.swift in Sources */,

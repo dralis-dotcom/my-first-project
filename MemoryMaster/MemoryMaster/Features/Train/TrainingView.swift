@@ -35,7 +35,7 @@ struct SetupPhaseView: View {
             Section("Session") {
                 Stepper("Items: \(session.itemCount)",
                         value: $session.itemCount,
-                        in: 4...session.maxItems,
+                        in: session.minItems...session.maxItems,
                         step: stepSize)
                 Stepper("Memorize time: \(session.memorizeSeconds)s",
                         value: $session.memorizeSeconds,
@@ -56,8 +56,9 @@ struct SetupPhaseView: View {
 
     private var stepSize: Int {
         switch session.discipline {
-        case .numbers, .binary: return 10
-        default: return 2
+        case .numbers:  return 10
+        case .binary:   return 4
+        default:        return 2
         }
     }
 
@@ -74,7 +75,7 @@ struct SetupPhaseView: View {
         case .names:
             return "Study each face's colour and initials, then link the sound of the full name to a vivid image. In recall, avatars are shuffled — test yourself!"
         case .images:
-            return "Name each image aloud in your head (\"red diamond on mint\"), then chain the names into a story or place them along a journey. In recall, tap the images in their original order."
+            return "Name each image aloud in your head, then chain the names into a story or place them along a journey. In recall, tap the images in their original order."
         case .historicDates:
             return "Link each event to a vivid scene at a journey locus. Encode the year using the Major System or Dominic numbers so you can reconstruct it exactly."
         }
@@ -99,13 +100,36 @@ struct MemorizePhaseView: View {
 
             ScrollView {
                 switch session.discipline {
-                case .numbers, .binary:
+                case .numbers:
                     LazyVGrid(columns: digitColumns, spacing: 12) {
                         ForEach(Array(session.digits.enumerated()), id: \.offset) { _, digit in
                             Text("\(digit)")
                                 .font(.title2.monospacedDigit().bold())
                         }
                     }
+                    .padding()
+
+                case .binary:
+                    // Groups of 8 for readability
+                    let groups = stride(from: 0, to: session.digits.count, by: 8).map {
+                        Array(session.digits[$0..<min($0 + 8, session.digits.count)])
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(Array(groups.enumerated()), id: \.offset) { i, group in
+                            HStack(spacing: 6) {
+                                Text("\(i * 8 + 1).")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 32, alignment: .trailing)
+                                ForEach(Array(group.enumerated()), id: \.offset) { _, d in
+                                    Text("\(d)")
+                                        .font(.title2.monospacedDigit().bold())
+                                        .foregroundStyle(d == 1 ? .tint : .primary)
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
 
                 case .words:
@@ -207,13 +231,19 @@ struct RecallPhaseView: View {
         ScrollView {
             VStack(spacing: 16) {
                 switch session.discipline {
-                case .numbers, .binary:
+                case .numbers:
                     Text("Type the digits in order")
                         .font(.headline)
                     TextField("e.g. 3141592…", text: $session.digitAnswer, axis: .vertical)
                         .keyboardType(.numberPad)
                         .font(.title3.monospaced())
                         .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+
+                case .binary:
+                    Text("Tap 0 and 1 in order")
+                        .font(.headline)
+                    BinaryTapRecallView(session: session)
                         .padding(.horizontal)
 
                 case .words:
@@ -227,18 +257,16 @@ struct RecallPhaseView: View {
                     }
 
                 case .cards:
-                    Text("Pick each card in order").font(.headline)
-                    ForEach(session.cardAnswers.indices, id: \.self) { index in
-                        CardPickerRow(index: index, selection: $session.cardAnswers[index])
-                            .padding(.horizontal)
-                    }
+                    Text("Tap cards in the order you memorized them")
+                        .font(.headline)
+                    CardTapRecallView(session: session)
+                        .padding(.horizontal)
 
                 case .names:
                     Text("Avatars are shuffled — type each name")
                         .font(.headline)
                     Text("The coloured initials are your cue")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.secondary)
                     LazyVGrid(columns: avatarColumns, spacing: 14) {
                         ForEach(session.shuffledFaces.indices, id: \.self) { index in
                             VStack(spacing: 8) {
@@ -260,17 +288,14 @@ struct RecallPhaseView: View {
                     Text("Tap the images in their original order")
                         .font(.headline)
                     Text("Selected: \(session.imageTapOrder.count)/\(session.abstractImages.count) — tap again to unselect")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.secondary)
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                         ForEach(session.shuffledImages) { image in
-                            Button {
-                                session.toggleImageTap(image)
-                            } label: {
+                            Button { session.toggleImageTap(image) } label: {
                                 AbstractImageView(image: image)
                                     .overlay(alignment: .topTrailing) {
-                                        if let position = session.imageTapOrder.firstIndex(of: image.seed) {
-                                            Text("\(position + 1)")
+                                        if let pos = session.imageTapOrder.firstIndex(of: image.seed) {
+                                            Text("\(pos + 1)")
                                                 .font(.caption.bold().monospacedDigit())
                                                 .foregroundStyle(.white)
                                                 .frame(width: 24, height: 24)
@@ -278,11 +303,9 @@ struct RecallPhaseView: View {
                                                 .padding(4)
                                         }
                                     }
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(session.imageTapOrder.contains(image.seed) ? .blue : .clear,
-                                                    lineWidth: 3)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 10)
+                                        .stroke(session.imageTapOrder.contains(image.seed) ? .blue : .clear,
+                                                lineWidth: 3))
                             }
                             .buttonStyle(.plain)
                         }
@@ -293,12 +316,10 @@ struct RecallPhaseView: View {
                     Text("What year did each event occur?")
                         .font(.headline)
                     Text("±5 years counts as correct")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.secondary)
                     ForEach(Array(session.historicEvents.enumerated()), id: \.element.id) { index, event in
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("\(index + 1). \(event.description)")
-                                .font(.subheadline)
+                            Text("\(index + 1). \(event.description)").font(.subheadline)
                             TextField("Year", text: $session.historicDateAnswers[index])
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.roundedBorder)
@@ -318,29 +339,124 @@ struct RecallPhaseView: View {
     }
 }
 
-struct CardPickerRow: View {
-    let index: Int
-    @Binding var selection: PlayingCard?
+// MARK: - Binary tap recall grid
 
-    private static let deck = PlayingCard.fullDeck()
+struct BinaryTapRecallView: View {
+    @ObservedObject var session: TrainingSession
+
+    private let answerColumns = Array(repeating: GridItem(.fixed(28)), count: 10)
 
     var body: some View {
-        HStack {
-            Text("#\(index + 1)")
-                .font(.subheadline.monospacedDigit())
+        VStack(spacing: 14) {
+            // Progress counter
+            Text("\(session.binaryTappedDigits.count) / \(session.digits.count)")
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 40, alignment: .leading)
-            Picker("Card \(index + 1)", selection: $selection) {
-                Text("—").tag(PlayingCard?.none)
-                ForEach(Self.deck) { card in
-                    Text(card.display).tag(PlayingCard?.some(card))
+
+            // Current answer — groups of 8 in a scrollable area
+            if session.binaryTappedDigits.isEmpty {
+                Text("Tap 0 or 1 below to start")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .frame(height: 52)
+            } else {
+                ScrollView(.vertical) {
+                    let groups = stride(from: 0, to: session.binaryTappedDigits.count, by: 8).map {
+                        Array(session.binaryTappedDigits[$0..<min($0 + 8, session.binaryTappedDigits.count)])
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(Array(groups.enumerated()), id: \.offset) { i, group in
+                            HStack(spacing: 6) {
+                                Text("\(i * 8 + 1).")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 32, alignment: .trailing)
+                                ForEach(Array(group.enumerated()), id: \.offset) { _, d in
+                                    Text("\(d)")
+                                        .font(.title3.monospacedDigit().bold())
+                                        .foregroundStyle(d == 1 ? .tint : .primary)
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 4)
+                }
+                .frame(maxHeight: 120)
+                .padding(10)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
+            }
+
+            // Tap buttons
+            HStack(spacing: 16) {
+                ForEach([0, 1], id: \.self) { digit in
+                    Button { session.tapBinaryDigit(digit) } label: {
+                        Text("\(digit)")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .frame(maxWidth: .infinity, minHeight: 80)
+                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(session.binaryTappedDigits.count >= session.digits.count)
                 }
             }
-            .pickerStyle(.menu)
-            Spacer()
+
+            Button { session.backspaceBinary() } label: {
+                Label("Delete last", systemImage: "delete.backward")
+                    .font(.subheadline)
+            }
+            .disabled(session.binaryTappedDigits.isEmpty)
         }
-        .padding(8)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - Cards tap recall grid
+
+struct CardTapRecallView: View {
+    @ObservedObject var session: TrainingSession
+
+    private let cardColumns = Array(repeating: GridItem(.flexible()), count: 5)
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("\(session.cardTapOrder.count) / \(session.cards.count) placed — tap again to remove")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            LazyVGrid(columns: cardColumns, spacing: 8) {
+                ForEach(session.shuffledCardsGrid) { card in
+                    let tapIndex = session.cardTapOrder.firstIndex(of: card)
+                    Button { session.toggleCardTap(card) } label: {
+                        ZStack(alignment: .topTrailing) {
+                            Text(card.display)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(card.isRed ? .red : .primary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(
+                                    tapIndex != nil
+                                        ? Color.accentColor.opacity(0.15)
+                                        : Color(.secondarySystemBackground),
+                                    in: RoundedRectangle(cornerRadius: 8)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(tapIndex != nil ? Color.accentColor : .clear, lineWidth: 2)
+                                )
+                            if let idx = tapIndex {
+                                Text("\(idx + 1)")
+                                    .font(.caption2.bold().monospacedDigit())
+                                    .foregroundStyle(.white)
+                                    .frame(width: 18, height: 18)
+                                    .background(Circle().fill(Color.accentColor))
+                                    .offset(x: 4, y: -4)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 }
 
@@ -354,14 +470,11 @@ struct ResultsPhaseView: View {
         VStack(spacing: 20) {
             Text(session.correct == session.itemCount ? "🏆 Perfect!" : "Session complete")
                 .font(.title.bold())
-
             Text("\(session.correct) / \(session.itemCount)")
                 .font(.system(size: 56, weight: .heavy, design: .rounded).monospacedDigit())
-
             Text("Accuracy \(Int(Double(session.correct) / Double(max(session.itemCount, 1)) * 100))% · \(session.memorizeSeconds)s memorization")
                 .foregroundStyle(.secondary)
 
-            // Historic Dates: show a breakdown of exact vs close answers
             if session.discipline == .historicDates && !session.historicDateAnswers.isEmpty {
                 HistoricDatesResultDetail(session: session)
             }
@@ -369,7 +482,6 @@ struct ResultsPhaseView: View {
             Button("Train again") { session.phase = .setup }
                 .buttonStyle(BigButtonStyle())
                 .padding(.horizontal)
-
             Button("Back to disciplines") { dismiss() }
                 .padding(.top, 4)
         }
@@ -377,15 +489,13 @@ struct ResultsPhaseView: View {
     }
 }
 
-/// Compact breakdown for Historic Dates results.
 private struct HistoricDatesResultDetail: View {
     @ObservedObject var session: TrainingSession
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach(Array(session.historicEvents.enumerated()), id: \.element.id) { index, event in
-                let answer = index < session.historicDateAnswers.count
-                    ? session.historicDateAnswers[index] : ""
+                let answer = index < session.historicDateAnswers.count ? session.historicDateAnswers[index] : ""
                 let typed  = Int(answer.trimmingCharacters(in: .whitespaces)) ?? Int.min
                 let diff   = abs(typed - event.year)
                 HStack(spacing: 8) {
@@ -393,13 +503,10 @@ private struct HistoricDatesResultDetail: View {
                                     : diff <= 5  ? "circle.dotted.circle"
                                                  : "xmark.circle.fill")
                         .foregroundStyle(diff == 0 ? .green : diff <= 5 ? .orange : .red)
-                    Text(event.description)
-                        .font(.caption)
-                        .lineLimit(1)
+                    Text(event.description).font(.caption).lineLimit(1)
                     Spacer()
                     Text(answer.isEmpty ? "—" : answer)
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     Text("(\(event.year))")
                         .font(.caption.monospacedDigit().bold())
                 }
