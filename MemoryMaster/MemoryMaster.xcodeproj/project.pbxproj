@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		01AEC583C3C04C388378C023 /* DominicHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB401219B1645BD5D8B434D /* DominicHomeView.swift */; };
 		044C286124C3545FC13B0A34 /* DeckDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D08414364C2C9750CABC51E /* DeckDetailView.swift */; };
+		09C0E60D8FCC5BDD9A528124 /* ICloudSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE57D3C1A49BAE98F0939867 /* ICloudSyncManager.swift */; };
 		0F41F15D3285FD6C51B8FFAB /* SM2Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B69B5F723301218DD26205 /* SM2Scheduler.swift */; };
 		1283EA0FAEC50B0727218F4B /* TrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C1FE9EFC18A12353C8CED2 /* TrainingView.swift */; };
 		2B77FB87893429E1CFA8B081 /* JourneysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501D3BE88A51C410CD4D8DB1 /* JourneysView.swift */; };
@@ -24,11 +25,13 @@
 		63E665687E4F0F35691809B9 /* MemoryMasterWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FC5C0FBBC5067B2ECA77A270 /* MemoryMasterWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6A1A60D4C10B3AC2C443B078 /* WordBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770B16CDE6A219442F5BC5D0 /* WordBank.swift */; };
 		73EF1D6DA199545698897BF5 /* HistoricDatesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4AE069E62636F1C04AEC0C /* HistoricDatesData.swift */; };
+		81AD27EFA28A5089A0DE51BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4D373B8DE04EB93B625D1607 /* Assets.xcassets */; };
 		8B7BCC9493CBE6CDD25B6FF9 /* UIHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC00D4E81FA4C4CC5A7C9B2 /* UIHelpers.swift */; };
 		8E5AC4F4918A5CA8DE58ABD5 /* AbstractImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C4CE4B13E69710F717AE4E /* AbstractImageView.swift */; };
 		90ACBA59ADB9C48F6F1E1F9D /* MemoryMasterWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531E9FDBC18E5DA76163448C /* MemoryMasterWidgetBundle.swift */; };
 		9531451F0F1415158CB2F7A1 /* TrainHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AD565AFBC3540FBA4720AF /* TrainHomeView.swift */; };
 		9D6E35784C0E4D0B2E5EA63C /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D51C054BA79A8AF9DB77A47 /* Models.swift */; };
+		9F4CA2C6B1A3E45E7A18E359 /* AppIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE6CAA4EFA4CE5556B795DE /* AppIcon.swift */; };
 		A1BD53999A8D4DD34BE4208F /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8FBC55E2062F58FCCBB0E4A /* SwiftUI.framework */; };
 		A9F9E828E31365717DDFFA46 /* StudyHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C28F32E372B940BC4CB7635 /* StudyHomeView.swift */; };
 		AAE9BD71AF0673A39C7B7926 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF4C8CAEAB5B460C0260DC2 /* SettingsView.swift */; };
@@ -41,6 +44,7 @@
 		D4E1CDA56C396C3E1F18D467 /* DominicDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E796242E74872CC9009F2C /* DominicDefaults.swift */; };
 		D96442552E390F7565D77A0B /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA69195A37DBE881258803B /* StatsView.swift */; };
 		DD84EDB2BF67437DFC28A7CB /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBC8E282EBB5D7746C26BE6 /* KeychainHelper.swift */; };
+		EC06A956455A26F0820CD187 /* MemoryMasterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6A47D4CA668AC88C15A9BD /* MemoryMasterUITests.swift */; };
 		F6E12195741C875CE49E4DF7 /* MemoryMasterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3AD77EFBDFB64B342E9D48 /* MemoryMasterApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -51,6 +55,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 24F57086CDE1DE4764821D8A;
 			remoteInfo = MemoryMasterWidget;
+		};
+		F0AD68EED1949A6360EA7A38 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5D42C94823E377E68BD6800 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E52020649B04C66FDF88DC8B;
+			remoteInfo = MemoryMaster;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -71,6 +82,7 @@
 /* Begin PBXFileReference section */
 		0322DECD147B337DAFF2CF2C /* MindMapListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindMapListView.swift; sourceTree = "<group>"; };
 		10B69B5F723301218DD26205 /* SM2Scheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM2Scheduler.swift; sourceTree = "<group>"; };
+		185A7815D67A1CAFB48D15DB /* MemoryMasterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MemoryMasterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AF4C8CAEAB5B460C0260DC2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		21D3B6429C09682AC2B764A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2B3AD77EFBDFB64B342E9D48 /* MemoryMasterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMasterApp.swift; sourceTree = "<group>"; };
@@ -81,6 +93,7 @@
 		41047E31B66749ADB6FADA66 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		46BF377D2143C63CB06A0143 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
 		4BB401219B1645BD5D8B434D /* DominicHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DominicHomeView.swift; sourceTree = "<group>"; };
+		4D373B8DE04EB93B625D1607 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4FD9098F1203BD07BC02F7A6 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		501D3BE88A51C410CD4D8DB1 /* JourneysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneysView.swift; sourceTree = "<group>"; };
 		530FCDA8EFF42D5C6FD03BBE /* DominicTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DominicTableView.swift; sourceTree = "<group>"; };
@@ -102,10 +115,14 @@
 		B8FBC55E2062F58FCCBB0E4A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		C2AD16BD2824AE8C2646D99E /* MemoryMaster.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MemoryMaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C375DD98B56076E224FC47AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CCE6CAA4EFA4CE5556B795DE /* AppIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcon.swift; sourceTree = "<group>"; };
 		CDBC8E282EBB5D7746C26BE6 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		CE57D3C1A49BAE98F0939867 /* ICloudSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudSyncManager.swift; sourceTree = "<group>"; };
 		DD4AE069E62636F1C04AEC0C /* HistoricDatesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricDatesData.swift; sourceTree = "<group>"; };
 		E0AD565AFBC3540FBA4720AF /* TrainHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainHomeView.swift; sourceTree = "<group>"; };
+		E2108580092BBD0A9C872210 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F09093F4FDF20336B962CEA6 /* TrainingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingEngine.swift; sourceTree = "<group>"; };
+		FA6A47D4CA668AC88C15A9BD /* MemoryMasterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMasterUITests.swift; sourceTree = "<group>"; };
 		FAA69195A37DBE881258803B /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		FC5C0FBBC5067B2ECA77A270 /* MemoryMasterWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MemoryMasterWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -123,6 +140,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04A3B99F5E39E61AEEDC6F74 /* MemoryMasterUITests */ = {
+			isa = PBXGroup;
+			children = (
+				E2108580092BBD0A9C872210 /* Info.plist */,
+				FA6A47D4CA668AC88C15A9BD /* MemoryMasterUITests.swift */,
+			);
+			path = MemoryMasterUITests;
+			sourceTree = "<group>";
+		};
 		13E7343BA6CCAA14E405E1D0 /* MemoryMasterWidget */ = {
 			isa = PBXGroup;
 			children = (
@@ -138,6 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				5846565C3308F38A54B02DF8 /* MemoryMaster */,
+				04A3B99F5E39E61AEEDC6F74 /* MemoryMasterUITests */,
 				13E7343BA6CCAA14E405E1D0 /* MemoryMasterWidget */,
 				2911F52E7ECB0FF9E0E70E00 /* Frameworks */,
 				4DCA903FEB9B480A76AA6EE5 /* Products */,
@@ -215,6 +242,7 @@
 			isa = PBXGroup;
 			children = (
 				C2AD16BD2824AE8C2646D99E /* MemoryMaster.app */,
+				185A7815D67A1CAFB48D15DB /* MemoryMasterUITests.xctest */,
 				FC5C0FBBC5067B2ECA77A270 /* MemoryMasterWidget.appex */,
 			);
 			name = Products;
@@ -223,6 +251,7 @@
 		50630DB0C42447BD65FAB26F /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				CCE6CAA4EFA4CE5556B795DE /* AppIcon.swift */,
 				3CC00D4E81FA4C4CC5A7C9B2 /* UIHelpers.swift */,
 			);
 			path = Shared;
@@ -231,6 +260,7 @@
 		5846565C3308F38A54B02DF8 /* MemoryMaster */ = {
 			isa = PBXGroup;
 			children = (
+				4D373B8DE04EB93B625D1607 /* Assets.xcassets */,
 				21D3B6429C09682AC2B764A7 /* Info.plist */,
 				6C93CA3FCA098D7AD640D62D /* MemoryMaster.entitlements */,
 				47A94E3FBD9B62A2D10FB680 /* App */,
@@ -298,6 +328,7 @@
 			isa = PBXGroup;
 			children = (
 				46BF377D2143C63CB06A0143 /* AIService.swift */,
+				CE57D3C1A49BAE98F0939867 /* ICloudSyncManager.swift */,
 				CDBC8E282EBB5D7746C26BE6 /* KeychainHelper.swift */,
 				10B69B5F723301218DD26205 /* SM2Scheduler.swift */,
 			);
@@ -325,11 +356,30 @@
 			productReference = FC5C0FBBC5067B2ECA77A270 /* MemoryMasterWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		288BD3C58EB2F34C268CD2CD /* MemoryMasterUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C8963F8889F8847D20791F2E /* Build configuration list for PBXNativeTarget "MemoryMasterUITests" */;
+			buildPhases = (
+				BF784DD6DDD2BC61E1299F64 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BC236D1243FBAD8C4FF83153 /* PBXTargetDependency */,
+			);
+			name = MemoryMasterUITests;
+			packageProductDependencies = (
+			);
+			productName = MemoryMasterUITests;
+			productReference = 185A7815D67A1CAFB48D15DB /* MemoryMasterUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		E52020649B04C66FDF88DC8B /* MemoryMaster */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1A6C7D712FC22BFD86110F4A /* Build configuration list for PBXNativeTarget "MemoryMaster" */;
 			buildPhases = (
 				E89DE869BA857BA61913C997 /* Sources */,
+				92149D149EFD99D69D2219E2 /* Resources */,
 				3472438D17B8B0FBFF4E0916 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -353,6 +403,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					288BD3C58EB2F34C268CD2CD = {
+						TestTargetID = E52020649B04C66FDF88DC8B;
+					};
 				};
 			};
 			buildConfigurationList = DD31290AC2907F4FE6FBE60E /* Build configuration list for PBXProject "MemoryMaster" */;
@@ -370,10 +423,22 @@
 			projectRoot = "";
 			targets = (
 				E52020649B04C66FDF88DC8B /* MemoryMaster */,
+				288BD3C58EB2F34C268CD2CD /* MemoryMasterUITests */,
 				24F57086CDE1DE4764821D8A /* MemoryMasterWidget */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		92149D149EFD99D69D2219E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81AD27EFA28A5089A0DE51BF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1A993BE4B568DD2F5231F77E /* Sources */ = {
@@ -386,12 +451,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BF784DD6DDD2BC61E1299F64 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC06A956455A26F0820CD187 /* MemoryMasterUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E89DE869BA857BA61913C997 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				4157899344CF0C818BF262EA /* AIService.swift in Sources */,
 				8E5AC4F4918A5CA8DE58ABD5 /* AbstractImageView.swift in Sources */,
+				9F4CA2C6B1A3E45E7A18E359 /* AppIcon.swift in Sources */,
 				BA265D4904EDD8A6E48FBFAE /* AppStore.swift in Sources */,
 				44EA44284F0C778424792846 /* AvatarView.swift in Sources */,
 				044C286124C3545FC13B0A34 /* DeckDetailView.swift in Sources */,
@@ -400,6 +474,7 @@
 				2C4568B776DB042625ADC262 /* DominicLearnView.swift in Sources */,
 				BA0E9CB1FCF31C53C0852DA7 /* DominicTableView.swift in Sources */,
 				73EF1D6DA199545698897BF5 /* HistoricDatesData.swift in Sources */,
+				09C0E60D8FCC5BDD9A528124 /* ICloudSyncManager.swift in Sources */,
 				2B77FB87893429E1CFA8B081 /* JourneysView.swift in Sources */,
 				DD84EDB2BF67437DFC28A7CB /* KeychainHelper.swift in Sources */,
 				F6E12195741C875CE49E4DF7 /* MemoryMasterApp.swift in Sources */,
@@ -429,6 +504,11 @@
 			isa = PBXTargetDependency;
 			target = 24F57086CDE1DE4764821D8A /* MemoryMasterWidget */;
 			targetProxy = 430870707CC6BADB2E695BB5 /* PBXContainerItemProxy */;
+		};
+		BC236D1243FBAD8C4FF83153 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E52020649B04C66FDF88DC8B /* MemoryMaster */;
+			targetProxy = F0AD68EED1949A6360EA7A38 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -496,6 +576,44 @@
 			};
 			name = Debug;
 		};
+		4340ACCCFA33DD4ADAF15F4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = MemoryMasterUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMasterUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "";
+				TEST_TARGET_NAME = MemoryMaster;
+			};
+			name = Debug;
+		};
+		5362B8DF42C2BB0EB86665CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = MemoryMasterUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMasterUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "";
+				TEST_TARGET_NAME = MemoryMaster;
+			};
+			name = Release;
+		};
 		691CC4676BED1F38E4F16C1E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -509,7 +627,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.MemoryMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMaster;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -529,7 +647,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.MemoryMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMaster;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -548,7 +666,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.MemoryMasterWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMasterWidget;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -567,7 +685,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.MemoryMasterWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dralis.MemoryMasterWidget;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -647,6 +765,15 @@
 			buildConfigurations = (
 				AC722DBE153749532FFE0F6B /* Debug */,
 				C620E53C23B71A2A0E68CF32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C8963F8889F8847D20791F2E /* Build configuration list for PBXNativeTarget "MemoryMasterUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4340ACCCFA33DD4ADAF15F4C /* Debug */,
+				5362B8DF42C2BB0EB86665CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -2,8 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- iCloud Key-Value Storage — replace $(TeamIdentifierPrefix) with your Team ID before signing -->
     <key>com.apple.developer.ubiquity-kvstore-identifier</key>
-    <string>$(TeamIdentifierPrefix)com.example.MemoryMaster</string>
+    <string>$(TeamIdentifierPrefix)com.dralis.MemoryMaster</string>
 </dict>
 </plist>
