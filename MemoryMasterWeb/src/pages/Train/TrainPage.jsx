@@ -8,6 +8,7 @@ const DISCIPLINES = [
   { id: 'words',         label: 'Words',          icon: '📖', tip: 'Chain into an exaggerated story or journey.' },
   { id: 'cards',         label: 'Playing Cards',  icon: '♠️', tip: 'Assign each card a person; pairs = PA scenes.' },
   { id: 'historicDates', label: 'Historic Dates', icon: '📅', tip: 'Encode year with Dominic/Major; place on journey.' },
+  { id: 'shapes',        label: 'Shapes',         icon: '🔷', tip: 'Link each shape+colour to a vivid image on a journey.' },
 ]
 
 export default function TrainPage() {
