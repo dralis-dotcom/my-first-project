@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 
 /// A standard 52-card deck item, rendered as text (e.g. "A♠").
@@ -68,6 +69,8 @@ final class TrainingSession: ObservableObject {
     @Published var faces: [FaceItem] = []
     @Published var abstractImages: [AbstractImage] = []
     @Published var historicEvents: [HistoricEvent] = []
+    /// How many digits have been spoken so far (Spoken Numbers).
+    @Published var spokenCount = 0
 
     // Recall answers — Numbers
     @Published var digitAnswer: String = ""
@@ -90,6 +93,7 @@ final class TrainingSession: ObservableObject {
     @Published var correct = 0
 
     private var timer: Timer?
+    private let synthesizer = AVSpeechSynthesizer()
 
     init(discipline: Discipline) {
         self.discipline = discipline
@@ -103,6 +107,7 @@ final class TrainingSession: ObservableObject {
         case .names:         builtInDefault = 6
         case .images:        builtInDefault = 10
         case .historicDates: builtInDefault = 10
+        case .spokenNumbers: builtInDefault = 15
         }
         let key = "defaultItems_\(discipline.rawValue)"
         let saved = UserDefaults.standard.integer(forKey: key)
@@ -129,14 +134,30 @@ final class TrainingSession: ObservableObject {
         case .names:         return 16
         case .images:        return 30
         case .historicDates: return HistoricEventsBank.events.count
+        case .spokenNumbers: return 100
         }
     }
 
     func start() {
         generate()
         phase = .memorize
-        remainingSeconds = memorizeSeconds
         timer?.invalidate()
+
+        if discipline == .spokenNumbers {
+            // Digits are spoken one per second; recall begins automatically
+            // after the last digit. remainingSeconds counts digits left.
+            spokenCount = 0
+            remainingSeconds = digits.count
+            speakNextDigit()
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+                Task { @MainActor in
+                    self?.speakNextDigit()
+                }
+            }
+            return
+        }
+
+        remainingSeconds = memorizeSeconds
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
@@ -146,11 +167,24 @@ final class TrainingSession: ObservableObject {
         }
     }
 
+    private func speakNextDigit() {
+        guard spokenCount < digits.count else {
+            beginRecall()
+            return
+        }
+        let utterance = AVSpeechUtterance(string: String(digits[spokenCount]))
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate
+        synthesizer.speak(utterance)
+        spokenCount += 1
+        remainingSeconds = digits.count - spokenCount
+    }
+
     func beginRecall() {
         timer?.invalidate()
         timer = nil
+        synthesizer.stopSpeaking(at: .immediate)
         switch discipline {
-        case .numbers:
+        case .numbers, .spokenNumbers:
             digitAnswer = ""
         case .binary:
             binaryTappedDigits = []
@@ -184,7 +218,7 @@ final class TrainingSession: ObservableObject {
 
     private func generate() {
         switch discipline {
-        case .numbers:
+        case .numbers, .spokenNumbers:
             digits = (0..<itemCount).map { _ in Int.random(in: 0...9) }
         case .binary:
             digits = (0..<itemCount).map { _ in Int.random(in: 0...1) }
@@ -214,7 +248,7 @@ final class TrainingSession: ObservableObject {
 
     private func score() -> Int {
         switch discipline {
-        case .numbers:
+        case .numbers, .spokenNumbers:
             let typed = digitAnswer.filter(\.isNumber).map { Int(String($0))! }
             return zip(digits, typed).filter { $0 == $1 }.count
         case .binary:

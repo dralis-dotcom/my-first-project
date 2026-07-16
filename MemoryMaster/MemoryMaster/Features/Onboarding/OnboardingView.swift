@@ -179,6 +179,8 @@ private struct OnboardingTipPage: View {
             return "Name each image aloud in your head, then chain those names into a crazy story — or place each one at a locus on your journey."
         case .historicDates:
             return "Encode each year with the Dominic or Major System. Place the person + year scene at a locus associated with the event you are memorising."
+        case .spokenNumbers:
+            return "Digits arrive by ear, one per second, and you can't look back — convert each pair to its Dominic person the instant you hear it and keep moving along your journey."
         }
     }
 }

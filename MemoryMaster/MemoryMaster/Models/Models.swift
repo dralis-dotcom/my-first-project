@@ -134,6 +134,7 @@ enum Discipline: String, Codable, CaseIterable, Identifiable {
     case names         = "Names & Faces"
     case images        = "Images"
     case historicDates = "Historic Dates"
+    case spokenNumbers = "Spoken Numbers"
 
     var id: String { rawValue }
 
@@ -146,6 +147,7 @@ enum Discipline: String, Codable, CaseIterable, Identifiable {
         case .names:         return "person.2.fill"
         case .images:        return "photo.on.rectangle.angled"
         case .historicDates: return "calendar.badge.clock"
+        case .spokenNumbers: return "speaker.wave.2.fill"
         }
     }
 }

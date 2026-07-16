@@ -12,6 +12,8 @@ Timed memorize → recall → score sessions for the classic memory-sport discip
 - **Binary** — 0/1 sequences
 - **Names & Faces** — match names to faces
 - **Images** — memorize a sequence of procedurally generated abstract images, then tap them back into order (Memory League style)
+- **Historic Dates** — memorize events with years, then recall the year for each
+- **Spoken Numbers** — digits spoken aloud one per second (on-device speech synthesis), no looking back
 Configurable item count and memorization time, with per-discipline technique tips and score history.
 
 ### 📚 Study tool (Study tab)
