@@ -37,9 +37,15 @@ struct SetupPhaseView: View {
                         value: $session.itemCount,
                         in: session.minItems...session.maxItems,
                         step: stepSize)
-                Stepper("Memorize time: \(session.memorizeSeconds)s",
-                        value: $session.memorizeSeconds,
-                        in: 10...600, step: 10)
+                if session.discipline == .spokenNumbers {
+                    Text("Digits are spoken aloud, one per second — turn your volume up.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Stepper("Memorize time: \(session.memorizeSeconds)s",
+                            value: $session.memorizeSeconds,
+                            in: 10...600, step: 10)
+                }
             }
             Section {
                 Button("Start memorizing") { session.start() }
@@ -56,9 +62,9 @@ struct SetupPhaseView: View {
 
     private var stepSize: Int {
         switch session.discipline {
-        case .numbers:  return 10
-        case .binary:   return 4
-        default:        return 2
+        case .numbers, .spokenNumbers: return 10
+        case .binary:                  return 4
+        default:                       return 2
         }
     }
 
@@ -78,6 +84,8 @@ struct SetupPhaseView: View {
             return "Name each image aloud in your head, then chain the names into a story or place them along a journey. In recall, tap the images in their original order."
         case .historicDates:
             return "Link each event to a vivid scene at a journey locus. Encode the year using the Major System or Dominic numbers so you can reconstruct it exactly."
+        case .spokenNumbers:
+            return "The hardest discipline: you can't look back. Convert each spoken pair instantly into its Dominic person and keep placing scenes along a journey without pausing."
         }
     }
 }
@@ -194,6 +202,22 @@ struct MemorizePhaseView: View {
                         }
                     }
                     .padding(.horizontal)
+
+                case .spokenNumbers:
+                    VStack(spacing: 20) {
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.system(size: 64))
+                            .foregroundStyle(.tint)
+                            .padding(.top, 40)
+                        Text("Listen…")
+                            .font(.title2.bold())
+                        Text("Digit \(session.spokenCount) of \(session.digits.count)")
+                            .font(.headline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                        ProgressView(value: Double(session.spokenCount),
+                                     total: Double(max(session.digits.count, 1)))
+                            .padding(.horizontal, 40)
+                    }
                 }
             }
 
@@ -231,7 +255,7 @@ struct RecallPhaseView: View {
         ScrollView {
             VStack(spacing: 16) {
                 switch session.discipline {
-                case .numbers:
+                case .numbers, .spokenNumbers:
                     Text("Type the digits in order")
                         .font(.headline)
                     TextField("e.g. 3141592…", text: $session.digitAnswer, axis: .vertical)
