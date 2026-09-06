@@ -12,6 +12,9 @@ const ERROR_MESSAGES = {
   'auth/user-not-found': 'No account found with this email. Try signing up.',
   'auth/wrong-password': 'Wrong email or password.',
   'auth/too-many-requests': 'Too many attempts — please wait a minute and try again.',
+  'auth/operation-not-allowed': 'Email/Password sign-in is not enabled for this app yet. In the Firebase console, open Authentication → Sign-in method and enable Email/Password.',
+  'auth/network-request-failed': 'Could not reach the server — check your internet connection and try again.',
+  'auth/invalid-api-key': 'The app\'s Firebase configuration is invalid — check the environment variables in Vercel.',
 }
 
 export default function AuthScreen() {
@@ -32,7 +35,7 @@ export default function AuthScreen() {
         await signInWithEmailAndPassword(auth, email.trim(), password)
       }
     } catch (err) {
-      setError(ERROR_MESSAGES[err.code] || 'Something went wrong. Please try again.')
+      setError(ERROR_MESSAGES[err.code] || `Something went wrong (${err.code || err.message}). Please try again.`)
       setBusy(false)
     }
   }
