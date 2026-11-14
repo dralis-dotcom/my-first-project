@@ -8,7 +8,11 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dralis.memorymaster.mobile"
+      "bundleIdentifier": "com.dralis.memorymaster.mobile",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "buildNumber": "1"
     },
     "web": {
       "favicon": "./assets/favicon.png",

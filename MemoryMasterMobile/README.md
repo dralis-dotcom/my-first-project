@@ -30,8 +30,15 @@ npm run build:web      # writes the finished site to dist/
 npx serve dist -s      # open the printed address in a browser
 ```
 
-`dist/` is a plain static site: upload it to any web host (Vercel, Netlify, GitHub Pages at
-a root domain, …). On an iPhone, open the site in Safari → Share → **Add to Home Screen** and
+`dist/` is a plain static site, so any web host works.
+
+**Put it online with Vercel (about two minutes):**
+
+1. Go to vercel.com → **Add New… → Project** and pick the `my-first-project` repository.
+2. Set **Root Directory** to `MemoryMasterMobile`. Leave everything else as it is
+   (`vercel.json` in this folder already tells Vercel how to build).
+3. Press **Deploy**. Vercel gives you a web address and rebuilds on every push.
+ On an iPhone, open the site in Safari → Share → **Add to Home Screen** and
 it opens full-screen like an app and keeps working offline after the first visit
 (`public/manifest.json`, `public/sw.js`).
 
@@ -39,9 +46,14 @@ it opens full-screen like an app and keeps working offline after the first visit
 
 - **To try it:** install **Expo Go** from the App Store, run `npx expo start` on a computer,
   and scan the QR code with the iPhone camera.
-- **For the App Store / TestFlight:** this needs an Apple Developer account. Run
-  `npx eas-cli build --platform ios` (Expo's cloud build service — no Mac required), then
-  `npx eas-cli submit --platform ios`.
+- **For the App Store / TestFlight:** this needs a paid Apple Developer account and a free
+  Expo account. No Mac is required; Expo builds it in the cloud. `eas.json` is already set up.
+
+  ```bash
+  npx eas-cli login                               # sign in to Expo
+  npx eas-cli build --platform ios --profile production   # asks you to sign in to Apple
+  npx eas-cli submit --platform ios               # sends the build to TestFlight / App Store
+  ```
 
 ## The AI mnemonic maker
 
