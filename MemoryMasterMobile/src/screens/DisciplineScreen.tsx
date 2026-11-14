@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Discipline, disciplineById, DISCIPLINES, formatTime, humanTime, LevelKey } from '../data/disciplines';
 import type { SessionConfig } from '../engine';
@@ -61,8 +61,26 @@ export function TrainScreen({ navigation }: any) {
 export default function DisciplineScreen({ navigation, route }: any) {
   const d = disciplineById(route.params.id)!;
   const { state } = useStore();
-  const [levelKey, setLevelKey] = useState<LevelKey>('starter');
-  const level = d.levels.find((l) => l.key === levelKey)!;
+  const [levelKey, setLevelKey] = useState<LevelKey | 'custom'>('starter');
+  const starter = d.levels[0];
+  const [custom, setCustom] = useState({
+    amount: starter.amount,
+    memSec: starter.memSec,
+    recallSec: starter.recallSec,
+  });
+  const isCustom = levelKey === 'custom';
+  const spoken = d.kind === 'spoken';
+  const level = isCustom
+    ? { key: 'custom', label: 'Custom', ...custom, memSec: spoken ? custom.amount : custom.memSec }
+    : d.levels.find((l) => l.key === levelKey)!;
+  const step = AMOUNT_STEP[d.kind];
+  const maxAmount = d.speed ? 52 : d.levels[d.levels.length - 1].amount;
+  const bump = (field: 'memSec' | 'recallSec', dir: 1 | -1) =>
+    setCustom((c) => {
+      const i = TIMES.findIndex((t) => t >= c[field]);
+      const next = TIMES[Math.max(0, Math.min(TIMES.length - 1, (i < 0 ? TIMES.length - 1 : i) + dir))];
+      return { ...c, [field]: next };
+    });
 
   const best = state.results
     .filter((r) => r.disciplineId === d.id && r.levelKey === levelKey)
@@ -88,6 +106,7 @@ export default function DisciplineScreen({ navigation, route }: any) {
         {d.levels.map((l) => (
           <Pill key={l.key} label={l.label} active={l.key === levelKey} onPress={() => setLevelKey(l.key)} />
         ))}
+        <Pill label="Custom" icon="options" active={isCustom} onPress={() => setLevelKey('custom')} />
       </Row>
 
       <Card tone="gold" style={{ marginTop: 14 }}>
@@ -96,7 +115,30 @@ export default function DisciplineScreen({ navigation, route }: any) {
           <Stat label="Recall" value={humanTime(level.recallSec)} />
           <Stat label={d.unit} value={`${level.amount}`} />
         </Row>
-        {levelKey === 'starter' ? (
+        {isCustom ? (
+          <View style={{ marginTop: 14, gap: 10 }}>
+            <Stepper
+              label={`How many ${d.unit}`}
+              value={`${custom.amount}`}
+              onMinus={() => setCustom((c) => ({ ...c, amount: Math.max(step, c.amount - step) }))}
+              onPlus={() => setCustom((c) => ({ ...c, amount: Math.min(maxAmount, c.amount + step) }))}
+            />
+            {spoken ? null : (
+              <Stepper
+                label="Time to memorise"
+                value={humanTime(custom.memSec)}
+                onMinus={() => bump('memSec', -1)}
+                onPlus={() => bump('memSec', 1)}
+              />
+            )}
+            <Stepper
+              label="Time to recall"
+              value={humanTime(custom.recallSec)}
+              onMinus={() => bump('recallSec', -1)}
+              onPlus={() => bump('recallSec', 1)}
+            />
+          </View>
+        ) : levelKey === 'starter' ? (
           <Muted style={{ marginTop: 12 }}>Starter is a short, friendly round made for beginners.</Muted>
         ) : (
           <Muted style={{ marginTop: 12 }}>
@@ -119,7 +161,13 @@ export default function DisciplineScreen({ navigation, route }: any) {
         label="Start"
         icon="play"
         style={{ marginTop: 18 }}
-        onPress={() => navigation.navigate('Session', { config: startLevel(d, levelKey) })}
+        onPress={() =>
+          navigation.navigate('Session', {
+            config: isCustom
+              ? { ...startLevel(d, 'starter'), levelKey: 'custom', ...custom, memSec: level.memSec }
+              : startLevel(d, levelKey),
+          })
+        }
       />
 
       <Heading style={{ marginTop: 30, marginBottom: 10 }}>How it is scored</Heading>
@@ -133,6 +181,47 @@ export default function DisciplineScreen({ navigation, route }: any) {
         <Body>{d.tip}</Body>
       </Card>
     </Screen>
+  );
+}
+
+const TIMES = [30, 60, 120, 180, 300, 600, 900, 1800, 3600, 7200];
+const AMOUNT_STEP: Record<Discipline['kind'], number> = {
+  digits: 20,
+  binary: 30,
+  names: 2,
+  images: 1,
+  dates: 2,
+  cards: 13,
+  words: 5,
+  spoken: 10,
+};
+
+function Stepper({
+  label,
+  value,
+  onMinus,
+  onPlus,
+}: {
+  label: string;
+  value: string;
+  onMinus: () => void;
+  onPlus: () => void;
+}) {
+  return (
+    <Row style={{ justifyContent: 'space-between' }}>
+      <Text style={{ color: colors.textSoft, fontSize: 14.5, flex: 1 }}>{label}</Text>
+      <Row style={{ gap: 12 }}>
+        <Pressable onPress={onMinus} hitSlop={8} accessibilityLabel={`Less: ${label}`}>
+          <Ionicons name="remove-circle-outline" size={30} color={colors.gold} />
+        </Pressable>
+        <Text style={{ color: colors.text, fontWeight: '800', fontSize: 15, minWidth: 58, textAlign: 'center' }}>
+          {value}
+        </Text>
+        <Pressable onPress={onPlus} hitSlop={8} accessibilityLabel={`More: ${label}`}>
+          <Ionicons name="add-circle-outline" size={30} color={colors.gold} />
+        </Pressable>
+      </Row>
+    </Row>
   );
 }
 

@@ -13,7 +13,7 @@ import { MemorizeView } from './MemorizeViews';
 import { RecallView } from './RecallViews';
 import { ReviewView } from './ReviewViews';
 
-type Phase = 'countdown' | 'memorize' | 'recall' | 'results';
+type Phase = 'ready' | 'countdown' | 'memorize' | 'recall' | 'results';
 
 /** Counts down from `seconds` while `running`, then calls onEnd once. */
 function useCountdown(seconds: number, running: boolean, onEnd: () => void) {
@@ -42,7 +42,9 @@ export default function SessionScreen({ navigation, route }: any) {
   const { state, addResult, completeLesson } = useStore();
   const content = useMemo(() => generate(config), [config]);
 
-  const [phase, setPhase] = useState<Phase>('countdown');
+  // Browsers only allow speech after a tap, so Spoken Numbers on the web starts with a button.
+  const needsTap = config.kind === 'spoken' && Platform.OS === 'web';
+  const [phase, setPhase] = useState<Phase>(needsTap ? 'ready' : 'countdown');
   const [answers, setAnswers] = useState<Answers>({});
   const [score, setScore] = useState<Score | null>(null);
   const [memUsed, setMemUsed] = useState(0);
@@ -155,7 +157,28 @@ export default function SessionScreen({ navigation, route }: any) {
   let body: React.ReactNode = null;
   let footer: React.ReactNode = null;
 
-  if (phase === 'countdown') {
+  if (phase === 'ready') {
+    body = (
+      <View style={st.center}>
+        <View style={st.pulse}>
+          <Ionicons name="volume-high" size={56} color={colors.gold} />
+        </View>
+        <Heading style={{ marginTop: 28 }}>Turn your sound on</Heading>
+        <Muted style={{ marginTop: 6, marginBottom: 24, textAlign: 'center' }}>
+          A voice will read {config.amount} digits, one each second.
+        </Muted>
+        <Button
+          label="Start listening"
+          icon="play"
+          onPress={() => {
+            Speech.speak(' ', { volume: 0 });
+            setPhase('countdown');
+          }}
+        />
+        <Button label="Cancel" variant="quiet" small style={{ marginTop: 12 }} onPress={() => navigation.goBack()} />
+      </View>
+    );
+  } else if (phase === 'countdown') {
     body = (
       <View style={st.center}>
         <Eyebrow>{config.title}</Eyebrow>

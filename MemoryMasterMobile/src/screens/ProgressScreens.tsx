@@ -13,6 +13,7 @@ const LEVEL_LABEL: Record<string, string> = {
   national: 'National',
   international: 'International',
   world: 'World',
+  custom: 'Custom',
 };
 
 export function ProgressScreen({ navigation }: any) {
@@ -42,7 +43,7 @@ export function ProgressScreen({ navigation }: any) {
         {DISCIPLINES.map((d) => {
           const rs = state.results.filter((r) => r.disciplineId === d.id);
           // show the best result at the highest level played
-          const order = ['world', 'international', 'national', 'starter'];
+          const order = ['world', 'international', 'national', 'starter', 'custom'];
           const levelKey = order.find((k) => rs.some((r) => r.levelKey === k));
           const best = rs
             .filter((r) => r.levelKey === levelKey)

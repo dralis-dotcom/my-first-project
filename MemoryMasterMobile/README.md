@@ -1,6 +1,7 @@
-# MemoryMaster — Android & iPhone app
+# MemoryMaster — iPhone app and web app
 
-One app, one codebase, for both phones. Built with Expo (React Native) and TypeScript.
+One codebase that runs as an iPhone app and as a web app in any browser.
+Built with Expo (React Native) and TypeScript.
 
 ## What is inside
 
@@ -8,7 +9,7 @@ One app, one codebase, for both phones. Built with Expo (React Native) and TypeS
 |---|---|
 | **Home** | Your next lesson, your week, a 2-minute daily workout. |
 | **Learn** | A 10-lesson course for people who have never trained their memory. Each lesson ends with a small practice. Also "My Memory Palaces". |
-| **Train** | The ten World Memory Championships events, each with Starter, National, International and World levels. |
+| **Train** | The ten World Memory Championships events, each with Starter, National, International, World and Custom levels. |
 | **Medicine** | AI mnemonic maker: type a topic, get a mnemonic, a story set in one place, and a key to every image. Saved to a library with a "Test me" mode. |
 | **Progress** | Streak, personal bests, recent rounds, settings. |
 
@@ -21,17 +22,26 @@ Every event runs as **memorise → recall → score → check your answers**, wi
 scoring rules (see `src/engine.ts`). Event formats and time limits are in
 `src/data/disciplines.ts`.
 
-## Try it on your phone (easiest)
+## Use it as a web app
 
-1. Install **Expo Go** from Google Play (or the App Store).
-2. On a computer: `cd MemoryMasterMobile && npm install && npx expo start`
-3. Scan the QR code with Expo Go.
+```bash
+npm install
+npm run build:web      # writes the finished site to dist/
+npx serve dist -s      # open the printed address in a browser
+```
 
-## Get an installable Android APK
+`dist/` is a plain static site: upload it to any web host (Vercel, Netlify, GitHub Pages at
+a root domain, …). On an iPhone, open the site in Safari → Share → **Add to Home Screen** and
+it opens full-screen like an app and keeps working offline after the first visit
+(`public/manifest.json`, `public/sw.js`).
 
-Every push to this folder runs the **Build Android APK** workflow on GitHub.
-Open the run in the repository's *Actions* tab and download the **memorymaster-apk**
-artifact. Copy the `.apk` to an Android phone and open it to install.
+## Use it as an iPhone app
+
+- **To try it:** install **Expo Go** from the App Store, run `npx expo start` on a computer,
+  and scan the QR code with the iPhone camera.
+- **For the App Store / TestFlight:** this needs an Apple Developer account. Run
+  `npx eas-cli build --platform ios` (Expo's cloud build service — no Mac required), then
+  `npx eas-cli submit --platform ios`.
 
 ## The AI mnemonic maker
 
@@ -46,7 +56,7 @@ own small server so that users do not need a key.
 npm install
 npx tsc --noEmit                 # type-check
 npx expo start                   # run with Expo Go
-npx expo export --platform web   # web preview build in dist/
+npm run build:web                # web app build in dist/
 ```
 
 All data (progress, scores, palaces, saved mnemonics) is stored on the device only.

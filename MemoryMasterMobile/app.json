@@ -10,23 +10,19 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dralis.memorymaster.mobile"
     },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#07090F",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.dralis.memorymaster"
-    },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
     },
     "scheme": "memorymaster",
     "backgroundColor": "#07090F",
     "plugins": [
       "expo-secure-store"
+    ],
+    "platforms": [
+      "ios",
+      "web"
     ]
   }
 }

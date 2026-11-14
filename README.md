@@ -1,6 +1,6 @@
 # MemoryMaster — iOS
 
-> **New: Android + iPhone app.** A cross-platform version (Expo / React Native) lives in
+> **New: iPhone + web app.** A cross-platform version (Expo / React Native) lives in
 > [`MemoryMasterMobile/`](MemoryMasterMobile/README.md) — all ten World Memory Championships events,
 > a beginner course, and an AI mnemonic maker for medical study.
 
