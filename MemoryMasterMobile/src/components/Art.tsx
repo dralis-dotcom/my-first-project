@@ -1,85 +1,21 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import Svg, { Circle, ClipPath, Defs, Ellipse, G, Path, Rect } from 'react-native-svg';
+import { Image, Text, View } from 'react-native';
+import Svg, { Circle, ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
+import { FACE_PHOTOS } from './facePhotos';
 import { mulberry32 } from '../engine';
 import type { Card } from '../engine';
 import { colors } from '../theme';
 
 // ---------- Faces (for Names & Faces) ----------
 
-const SKIN = ['#F6D7BD', '#EBC09C', '#D6A277', '#B97F56', '#8E5A3A', '#5E3A26'];
-const HAIR = ['#1B1512', '#3B2618', '#6B4423', '#A8672E', '#D8B06A', '#8F8F96', '#B23A2E'];
-const SHIRT = ['#3F5BA9', '#2E7D6B', '#A23B4E', '#6B4FA3', '#B8873A', '#3A4352', '#C0623A'];
-const BG = ['#1D2540', '#23203F', '#1B2F33', '#33222A', '#2C2A1E', '#202838'];
-
-export function Face({ seed, size = 96 }: { seed: number; size?: number }) {
-  const r = mulberry32(seed);
-  const pick = <T,>(arr: T[]) => arr[Math.floor(r() * arr.length)];
-  const skin = pick(SKIN);
-  const hair = pick(HAIR);
-  const shirt = pick(SHIRT);
-  const bg = pick(BG);
-  const faceRx = 24 + r() * 6;
-  const faceRy = 29 + r() * 5;
-  const hairStyle = Math.floor(r() * 6); // 0 bald, 1 short, 2 long, 3 bun, 4 curly, 5 side
-  const glasses = r() < 0.28;
-  const beard = r() < 0.2;
-  const brow = r() * 3;
-  const eyeGap = 9 + r() * 4;
-  const mouth = Math.floor(r() * 3);
-  const earrings = r() < 0.15;
-
+/** A portrait photo, like the photo sheets used in the Names & Faces event. */
+export function Face({ photo, size = 96 }: { photo: string; size?: number }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 100 100">
-      <Rect x={0} y={0} width={100} height={100} rx={18} fill={bg} />
-      {/* long hair sits behind the head */}
-      {hairStyle === 2 ? <Path d={`M${50 - faceRx - 5} 44 Q50 4 ${50 + faceRx + 5} 44 L${50 + faceRx + 7} 86 L${50 - faceRx - 7} 86 Z`} fill={hair} /> : null}
-      {hairStyle === 3 ? <Circle cx={50} cy={13} r={9} fill={hair} /> : null}
-      {/* shoulders */}
-      <Path d="M12 100 Q14 78 38 74 L62 74 Q86 78 88 100 Z" fill={shirt} />
-      <Rect x={43} y={66} width={14} height={14} fill={skin} />
-      {/* ears */}
-      <Circle cx={50 - faceRx} cy={49} r={4.5} fill={skin} />
-      <Circle cx={50 + faceRx} cy={49} r={4.5} fill={skin} />
-      {earrings ? <Circle cx={50 - faceRx} cy={55} r={1.8} fill={colors.gold} /> : null}
-      {/* head */}
-      <Ellipse cx={50} cy={46} rx={faceRx} ry={faceRy} fill={skin} />
-      {/* hair on top */}
-      {hairStyle === 1 || hairStyle === 2 || hairStyle === 3 ? (
-        <Path d={`M${50 - faceRx} 42 Q${50 - faceRx} 14 50 15 Q${50 + faceRx} 14 ${50 + faceRx} 42 Q${50 + faceRx - 6} 27 50 27 Q${50 - faceRx + 6} 27 ${50 - faceRx} 42 Z`} fill={hair} />
-      ) : null}
-      {hairStyle === 4 ? (
-        <G fill={hair}>
-          {[-22, -11, 0, 11, 22].map((dx) => (
-            <Circle key={dx} cx={50 + dx} cy={22 + Math.abs(dx) * 0.28} r={9.5} />
-          ))}
-        </G>
-      ) : null}
-      {hairStyle === 5 ? (
-        <Path d={`M${50 - faceRx} 44 Q${50 - faceRx - 2} 12 54 14 Q${50 + faceRx + 2} 16 ${50 + faceRx} 40 Q62 24 40 28 Q${50 - faceRx + 4} 30 ${50 - faceRx} 44 Z`} fill={hair} />
-      ) : null}
-      {/* brows + eyes */}
-      <Rect x={50 - eyeGap - 5} y={38 - brow} width={10} height={2} rx={1} fill={hair} />
-      <Rect x={50 + eyeGap - 5} y={38 - brow} width={10} height={2} rx={1} fill={hair} />
-      <Circle cx={50 - eyeGap} cy={45} r={2.6} fill="#1A1410" />
-      <Circle cx={50 + eyeGap} cy={45} r={2.6} fill="#1A1410" />
-      {glasses ? (
-        <G stroke="#E8E2D2" strokeWidth={1.6} fill="none">
-          <Circle cx={50 - eyeGap} cy={45} r={7} />
-          <Circle cx={50 + eyeGap} cy={45} r={7} />
-          <Path d={`M${50 - eyeGap + 7} 45 L${50 + eyeGap - 7} 45`} />
-        </G>
-      ) : null}
-      {/* nose */}
-      <Path d="M50 48 Q47 56 50 57" stroke="#00000033" strokeWidth={1.6} fill="none" />
-      {beard ? (
-        <Path d={`M${50 - faceRx + 3} 54 Q50 ${46 + faceRy + 8} ${50 + faceRx - 3} 54 Q50 68 ${50 - faceRx + 3} 54 Z`} fill={hair} opacity={0.92} />
-      ) : null}
-      {/* mouth */}
-      {mouth === 0 ? <Path d="M42 62 Q50 69 58 62" stroke="#7A2E2E" strokeWidth={2.2} fill="none" strokeLinecap="round" /> : null}
-      {mouth === 1 ? <Path d="M43 63 L57 63" stroke="#7A2E2E" strokeWidth={2.2} strokeLinecap="round" /> : null}
-      {mouth === 2 ? <Path d="M42 61 Q50 71 58 61 Z" fill="#7A2E2E" /> : null}
-    </Svg>
+    <Image
+      source={FACE_PHOTOS[photo]}
+      style={{ width: size, height: size, borderRadius: size * 0.16, backgroundColor: colors.surface2 }}
+      accessibilityLabel="Portrait photo"
+    />
   );
 }
 

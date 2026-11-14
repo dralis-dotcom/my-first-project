@@ -104,7 +104,7 @@ export function RecallView({
         <View>
           {content.recallOrder.map((i) => (
             <View key={i} style={r.nameRow}>
-              <Face seed={content.people[i].seed} size={84} />
+              <Face photo={content.people[i].photo} size={84} />
               <View style={{ flex: 1, gap: 8 }}>
                 <TextInput
                   style={r.input}

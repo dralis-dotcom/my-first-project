@@ -71,5 +71,12 @@ npx expo start                   # run with Expo Go
 npm run build:web                # web app build in dist/
 ```
 
+### Face photos
+
+Names & Faces uses 200 portrait photos in `assets/faces/` (downloaded from the randomuser.me
+portrait set; names in the app are invented and are not the people's real names). Check that
+this photo set's terms suit your use before publishing the app to a store, or replace the
+files with your own photos — keep the same file names (`m0.jpg`…`m99.jpg`, `w0.jpg`…`w99.jpg`).
+
 All data (progress, scores, palaces, saved mnemonics) is stored on the device only.
 This app is not affiliated with the World Memory Sports Council.

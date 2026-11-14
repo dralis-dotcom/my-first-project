@@ -79,7 +79,7 @@ export function MemorizeView({ content, digitGroup }: { content: Content; digitG
         <View style={s.grid}>
           {content.people.map((p, i) => (
             <View key={i} style={s.person}>
-              <Face seed={p.seed} size={104} />
+              <Face photo={p.photo} size={104} />
               <Text style={s.first}>{p.first}</Text>
               <Text style={s.last}>{p.last}</Text>
             </View>

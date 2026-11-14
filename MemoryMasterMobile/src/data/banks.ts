@@ -4,7 +4,11 @@ export const WORDS = `apple anchor arrow balloon banana basket bridge bucket but
   .split(/\s+/)
   .filter(Boolean);
 
-export const FIRST_NAMES = `Amara Liam Sofia Noah Yuki Omar Elena Mateo Priya Lucas Fatima Ethan Chloe Ravi Ingrid Diego Aisha Hugo Mei Tariq Nora Felix Zara Jonas Leila Oscar Hana Marco Sana Viktor Lucia Kofi Greta Samir Tessa Arjun Clara Idris Maya Pavel Nadia Luca Imani Erik Rosa Kenji Selma Tomas Anika Bruno Dalia Emil Farah Gustav Hira Ivan Jade Karim Lena Milan Nina Otto Paloma Quentin Rania Stefan Talia Uma Vera Wesley Ximena Yusuf Zoe Adele Basil Carmen Dmitri Esme Finn Gloria Hassan Iris Jorge Kira Leo Mona Nikolai Olive Pedro Ruth Soren Thea Umar Violet Walter Yara Zane`
+export const FEMALE_NAMES = `Amara Sofia Yuki Elena Priya Fatima Chloe Ingrid Aisha Mei Nora Zara Leila Hana Sana Lucia Greta Tessa Clara Maya Nadia Imani Rosa Selma Anika Dalia Farah Hira Jade Lena Nina Paloma Rania Talia Uma Vera Ximena Zoe Adele Carmen Esme Gloria Iris Kira Mona Olive Ruth Thea Violet Yara Alma Bianca Chiara Daria Elif Freya Giulia Helga Ines Jana Katya Lina Mira Noor Oksana Petra`
+  .split(/\s+/)
+  .filter(Boolean);
+
+export const MALE_NAMES = `Liam Noah Omar Mateo Lucas Ethan Ravi Diego Hugo Tariq Felix Jonas Oscar Marco Viktor Kofi Samir Arjun Idris Pavel Luca Erik Kenji Tomas Bruno Emil Gustav Ivan Karim Milan Otto Quentin Stefan Wesley Yusuf Basil Dmitri Finn Hassan Jorge Leo Nikolai Pedro Soren Umar Walter Zane Anders Boris Cyrus Dario Enzo Farid Goran Henrik Ismail Jakub Kemal Lars Malik Nils Oleg Rafael`
   .split(/\s+/)
   .filter(Boolean);
 

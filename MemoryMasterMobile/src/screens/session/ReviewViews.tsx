@@ -76,7 +76,7 @@ export function ReviewView({ content, answers }: { content: Content; answers: An
         <View>
           {content.people.map((p, i) => (
             <View key={i} style={[v.block, { alignItems: 'center', gap: 12 }]}>
-              <Face seed={p.seed} size={56} />
+              <Face photo={p.photo} size={56} />
               <View style={{ flex: 1 }}>
                 <Pair expected={p.first} given={answers.names?.[i]?.first ?? ''} />
                 <Pair expected={p.last} given={answers.names?.[i]?.last ?? ''} />

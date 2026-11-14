@@ -1,4 +1,4 @@
-import { EVENT_DID, EVENT_WHO, FIRST_NAMES, LAST_NAMES, WORDS } from './data/banks';
+import { EVENT_DID, EVENT_WHO, FEMALE_NAMES, LAST_NAMES, MALE_NAMES, WORDS } from './data/banks';
 import type { Kind } from './data/disciplines';
 
 // ---------- random helpers ----------
@@ -27,8 +27,11 @@ const randInt = (n: number) => Math.floor(Math.random() * n);
 
 // ---------- session content ----------
 
+/** Number of portrait photos available for each of 'm' (men) and 'w' (women). */
+export const PHOTOS_PER_GROUP = 100;
+
 export interface Person {
-  seed: number;
+  photo: string; // key of the portrait photo, e.g. "m12" or "w40"
   first: string;
   last: string;
 }
@@ -99,13 +102,20 @@ export function generate(config: SessionConfig): Content {
       return { kind: 'words', words: pool.slice(0, n) };
     }
     case 'names': {
-      const firsts = shuffle(FIRST_NAMES);
+      // every face is a different photo; first names match the photo group
+      const photos = shuffle(
+        ['m', 'w'].flatMap((g) => Array.from({ length: PHOTOS_PER_GROUP }, (_, i) => `${g}${i}`)),
+      );
+      const male = shuffle(MALE_NAMES);
+      const female = shuffle(FEMALE_NAMES);
       const lasts = shuffle(LAST_NAMES);
-      const people = Array.from({ length: n }, (_, i) => ({
-        seed: randInt(2 ** 31),
-        first: firsts[i % firsts.length],
-        last: lasts[i % lasts.length],
-      }));
+      let mi = 0;
+      let fi = 0;
+      const people = Array.from({ length: n }, (_, i) => {
+        const photo = photos[i % photos.length];
+        const first = photo[0] === 'm' ? male[mi++ % male.length] : female[fi++ % female.length];
+        return { photo, first, last: lasts[i % lasts.length] };
+      });
       return { kind: 'names', people, recallOrder: shuffle(people.map((_, i) => i)) };
     }
     case 'dates': {
