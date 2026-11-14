@@ -27,6 +27,8 @@ export interface SavedMnemonic {
   imageKey: MnemonicPart[];
   tip: string;
   date: string;
+  reviewStage?: number; // 0 = review after 1 day, 1 = after 1 week, 2 = after 1 month, 3 = learned
+  nextReview?: string | null; // ISO date of the next review, null when learned
 }
 
 export interface Palace {
@@ -57,6 +59,22 @@ const initial: AppState = {
 
 const KEY = 'memorymaster.state.v1';
 
+/** Review a new item after 1 day, then 1 week, then 1 month. */
+export const REVIEW_DAYS = [1, 7, 30];
+
+const daysFromNow = (days: number) => new Date(Date.now() + days * 86400000).toISOString();
+
+export function nextReviewOf(m: SavedMnemonic): string | null {
+  if (m.nextReview !== undefined) return m.nextReview;
+  // items saved before reviews existed: due one day after they were made
+  return new Date(new Date(m.date).getTime() + 86400000).toISOString();
+}
+
+export function isDue(m: SavedMnemonic): boolean {
+  const next = nextReviewOf(m);
+  return !!next && new Date(next).getTime() <= Date.now();
+}
+
 export function dayKey(d = new Date()): string {
   const m = `${d.getMonth() + 1}`.padStart(2, '0');
   const day = `${d.getDate()}`.padStart(2, '0');
@@ -83,6 +101,7 @@ interface Ctx {
   completeLesson: (id: string) => void;
   addResult: (r: Omit<SessionResult, 'id' | 'date'>) => void;
   saveMnemonic: (m: Omit<SavedMnemonic, 'id' | 'date'>) => SavedMnemonic;
+  reviewMnemonic: (id: string, remembered: boolean) => void;
   deleteMnemonic: (id: string) => void;
   reset: () => void;
 }
@@ -131,10 +150,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           activeDays: markToday(s),
         })),
       saveMnemonic: (m) => {
-        const saved = { ...m, id: uid(), date: new Date().toISOString() };
+        const saved = {
+          ...m,
+          id: uid(),
+          date: new Date().toISOString(),
+          reviewStage: 0,
+          nextReview: daysFromNow(REVIEW_DAYS[0]),
+        };
         update((s) => ({ mnemonics: [saved, ...s.mnemonics] }));
         return saved;
       },
+      reviewMnemonic: (id, remembered) =>
+        update((s) => ({
+          mnemonics: s.mnemonics.map((m) => {
+            if (m.id !== id) return m;
+            // forgot: start again tomorrow; remembered: move to the next, longer gap
+            const stage = remembered ? (m.reviewStage ?? 0) + 1 : 0;
+            const gap = REVIEW_DAYS[stage];
+            return { ...m, reviewStage: stage, nextReview: gap ? daysFromNow(gap) : null };
+          }),
+          activeDays: markToday(s),
+        })),
       deleteMnemonic: (id) => update((s) => ({ mnemonics: s.mnemonics.filter((m) => m.id !== id) })),
       reset: () => setState({ ...initial, onboarded: true }),
     }),

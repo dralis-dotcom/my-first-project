@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { DISCIPLINES } from '../data/disciplines';
 import { LESSONS } from '../data/lessons';
-import { currentStreak, dayKey, useStore } from '../store';
+import { currentStreak, dayKey, isDue, useStore } from '../store';
 import { colors, fonts, radius } from '../theme';
 import { Body, Button, Card, Eyebrow, Heading, IconBadge, Muted, ProgressBar, Row, Screen, Title } from '../ui';
 import { startLevel } from './DisciplineScreen';
@@ -19,6 +19,7 @@ export default function HomeScreen({ navigation }: any) {
   const streak = currentStreak(state.activeDays);
   const doneCount = state.lessonsDone.length;
   const nextLesson = LESSONS.find((l) => !state.lessonsDone.includes(l.id));
+  const dueCount = state.mnemonics.filter(isDue).length;
   const trainedToday = state.activeDays.includes(dayKey());
 
   // A different event every day for the quick workout.
@@ -61,6 +62,21 @@ export default function HomeScreen({ navigation }: any) {
           }
         />
       </LinearGradient>
+
+      {dueCount > 0 ? (
+        <Card tone="gold" style={{ marginTop: 16 }} onPress={() => navigation.navigate('Medicine')}>
+          <Row style={{ gap: 14 }}>
+            <IconBadge name="alarm" />
+            <View style={{ flex: 1 }}>
+              <Text style={s.cardTitle}>
+                {dueCount} {dueCount === 1 ? 'review is' : 'reviews are'} due today
+              </Text>
+              <Muted>Open your mnemonics and review them before they fade.</Muted>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+          </Row>
+        </Card>
+      ) : null}
 
       {/* Week strip */}
       <Card style={{ marginTop: 16 }}>

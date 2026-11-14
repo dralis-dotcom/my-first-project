@@ -7,7 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StoreProvider, useStore } from './src/store';
+import { isDue, StoreProvider, useStore } from './src/store';
 import { colors, fonts } from './src/theme';
 import { Body, Button, IconBadge, IconName, Screen } from './src/ui';
 import HomeScreen from './src/screens/HomeScreen';
@@ -30,6 +30,8 @@ const TAB_ICONS: Record<string, [IconName, IconName]> = {
 
 function Tabs() {
   const insets = useSafeAreaInsets();
+  const { state } = useStore();
+  const dueCount = state.mnemonics.filter(isDue).length;
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -52,7 +54,14 @@ function Tabs() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Learn" component={LearnScreen} />
       <Tab.Screen name="Train" component={TrainScreen} />
-      <Tab.Screen name="Medicine" component={MedicineScreen} />
+      <Tab.Screen
+        name="Medicine"
+        component={MedicineScreen}
+        options={{
+          tabBarBadge: dueCount > 0 ? dueCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.gold, color: colors.bg, fontSize: 10, fontWeight: '800' },
+        }}
+      />
       <Tab.Screen name="Progress" component={ProgressScreen} />
     </Tab.Navigator>
   );

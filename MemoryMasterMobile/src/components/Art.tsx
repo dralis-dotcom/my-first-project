@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, Ellipse, G, Path, Rect } from 'react-native-svg';
 import { mulberry32 } from '../engine';
 import type { Card } from '../engine';
 import { colors } from '../theme';
@@ -84,8 +84,7 @@ export function Face({ seed, size = 96 }: { seed: number; size?: number }) {
 }
 
 // ---------- Abstract images ----------
-
-const INK = ['#E3B764', '#8B7CF6', '#5ED3A2', '#F0736A', '#6FB6F2', '#F2EEE6', '#E08AC0'];
+// Black-and-white textured blobs, in the style of championship abstract-image sheets.
 
 function blobPath(r: () => number, cx: number, cy: number, base: number, wobble: number, n: number) {
   const pts: [number, number][] = [];
@@ -104,35 +103,69 @@ function blobPath(r: () => number, cx: number, cy: number, base: number, wobble:
   return `${d} Z`;
 }
 
+const PAPER = '#F4F1EA';
+const GREYS = ['#111111', '#2B2B2B', '#4A4A4A', '#6E6E6E'];
+
 export function AbstractImage({ seed, size = 56 }: { seed: number; size?: number }) {
   const r = mulberry32(seed);
-  const main = INK[Math.floor(r() * INK.length)];
-  let second = INK[Math.floor(r() * INK.length)];
-  if (second === main) second = '#0B0E17';
-  const outer = blobPath(r, 50, 50, 34, 0.42, 5 + Math.floor(r() * 5));
-  const inner = blobPath(r, 38 + r() * 24, 38 + r() * 24, 9 + r() * 9, 0.5, 4 + Math.floor(r() * 4));
-  const texture = Math.floor(r() * 3);
-  const dots = Array.from({ length: 3 + Math.floor(r() * 4) }, () => [28 + r() * 44, 28 + r() * 44, 1.5 + r() * 2.5]);
-  const tilt = Math.floor(r() * 180);
+  const outer = blobPath(r, 50, 50, 35, 0.45, 5 + Math.floor(r() * 6));
+  const fill = GREYS[Math.floor(r() * GREYS.length)];
+  const light = r() < 0.5 ? PAPER : '#BDBDBD';
+  const texture = Math.floor(r() * 6); // stripes, dots, rings, cross-hatch, checks, speckle
+  const angle = Math.floor(r() * 180);
+  const gap = 7 + Math.floor(r() * 7);
+  const weight = 1.6 + r() * 2.6;
+  const clipId = `ab${seed}`;
+  const lines: number[] = [];
+  for (let v = -30; v <= 130; v += gap) lines.push(v);
+  const speckles = Array.from({ length: 26 }, () => [12 + r() * 76, 12 + r() * 76, 0.8 + r() * 3.2]);
 
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
-      <Rect x={0} y={0} width={100} height={100} rx={16} fill="#0B0E17" />
-      <Path d={outer} fill={main} />
-      <Path d={inner} fill={second} />
-      {texture === 0
-        ? dots.map((d, i) => <Circle key={i} cx={d[0]} cy={d[1]} r={d[2]} fill="#0B0E17" opacity={0.75} />)
-        : null}
-      {texture === 1 ? (
-        <G rotation={tilt} origin="50, 50" stroke="#0B0E17" strokeWidth={2.4} opacity={0.6}>
-          <Path d="M30 40 L70 40" />
-          <Path d="M30 50 L70 50" />
-          <Path d="M30 60 L70 60" />
-        </G>
-      ) : null}
-      {texture === 2 ? (
-        <Circle cx={50} cy={50} r={16 + r() * 8} stroke="#0B0E17" strokeWidth={2.6} fill="none" opacity={0.6} />
-      ) : null}
+      <Defs>
+        <ClipPath id={clipId}>
+          <Path d={outer} />
+        </ClipPath>
+      </Defs>
+      <Rect x={0} y={0} width={100} height={100} rx={14} fill={PAPER} />
+      <Path d={outer} fill={fill} />
+      <G clipPath={`url(#${clipId})`}>
+        {texture === 0 || texture === 3 ? (
+          <G rotation={angle} origin="50, 50" stroke={light} strokeWidth={weight}>
+            {lines.map((v) => (
+              <Path key={v} d={`M-30 ${v} L130 ${v}`} />
+            ))}
+          </G>
+        ) : null}
+        {texture === 3 ? (
+          <G rotation={angle + 90} origin="50, 50" stroke={light} strokeWidth={weight}>
+            {lines.map((v) => (
+              <Path key={v} d={`M-30 ${v} L130 ${v}`} />
+            ))}
+          </G>
+        ) : null}
+        {texture === 1 ? (
+          <G rotation={angle} origin="50, 50" fill={light}>
+            {lines.map((y) => lines.map((x) => <Circle key={`${x}-${y}`} cx={x} cy={y} r={weight * 0.8} />))}
+          </G>
+        ) : null}
+        {texture === 2
+          ? [8, 8 + gap, 8 + gap * 2, 8 + gap * 3, 8 + gap * 4].map((rad) => (
+              <Circle key={rad} cx={38 + (angle % 24)} cy={62 - (angle % 24)} r={rad} stroke={light} strokeWidth={weight} fill="none" />
+            ))
+          : null}
+        {texture === 4 ? (
+          <G rotation={angle} origin="50, 50" fill={light}>
+            {lines.map((y, yi) =>
+              lines.map((x, xi) =>
+                (xi + yi) % 2 === 0 ? <Rect key={`${x}-${y}`} x={x} y={y} width={gap} height={gap} /> : null,
+              ),
+            )}
+          </G>
+        ) : null}
+        {texture === 5 ? speckles.map((d, i) => <Circle key={i} cx={d[0]} cy={d[1]} r={d[2]} fill={light} />) : null}
+      </G>
+      <Path d={outer} fill="none" stroke="#111111" strokeWidth={1.6} />
     </Svg>
   );
 }

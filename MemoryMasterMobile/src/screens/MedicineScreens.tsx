@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { AiError, generateMnemonic, getApiKey } from '../ai';
-import { useStore } from '../store';
+import { isDue, nextReviewOf, REVIEW_DAYS, useStore } from '../store';
 import { colors, fonts, radius } from '../theme';
 import { Body, Button, Card, Eyebrow, Heading, IconBadge, Muted, Pill, Row, Screen, Title, TopBar } from '../ui';
 
@@ -25,6 +25,26 @@ export function MedicineScreen({ navigation }: any) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [writing, setWriting] = useState(false);
+  const [own, setOwn] = useState({ title: '', mnemonic: '', notes: '' });
+
+  const saveOwn = () => {
+    if (!own.title.trim() || !own.mnemonic.trim()) return;
+    const saved = saveMnemonic({
+      topic: 'My own mnemonic',
+      title: own.title.trim(),
+      mnemonic: own.mnemonic.trim(),
+      parts: [],
+      location: '',
+      story: own.notes.trim(),
+      imageKey: [],
+      tip: '',
+    });
+    setOwn({ title: '', mnemonic: '', notes: '' });
+    setWriting(false);
+    navigation.navigate('Mnemonic', { id: saved.id });
+  };
+  const due = state.mnemonics.filter(isDue);
 
   useFocusEffect(
     useCallback(() => {
@@ -113,6 +133,65 @@ export function MedicineScreen({ navigation }: any) {
         />
       )}
 
+      <Card style={{ marginTop: 14 }} onPress={writing ? undefined : () => setWriting(true)}>
+        <Row style={{ gap: 12 }}>
+          <Ionicons name="create-outline" size={20} color={colors.gold} />
+          <View style={{ flex: 1 }}>
+            <Text style={s.itemTitle}>Write my own mnemonic</Text>
+            <Muted>No AI needed. Save a mnemonic you already know and get review reminders.</Muted>
+          </View>
+          {writing ? (
+            <Pressable onPress={() => setWriting(false)} hitSlop={10} accessibilityLabel="Close">
+              <Ionicons name="close" size={20} color={colors.muted} />
+            </Pressable>
+          ) : (
+            <Ionicons name="chevron-down" size={18} color={colors.muted} />
+          )}
+        </Row>
+        {writing ? (
+          <View style={{ marginTop: 14, gap: 10 }}>
+            <TextInput
+              style={s.field}
+              value={own.title}
+              onChangeText={(t) => setOwn((o) => ({ ...o, title: t }))}
+              placeholder="Topic, e.g. Carpal bones"
+              placeholderTextColor={colors.faint}
+            />
+            <TextInput
+              style={s.field}
+              value={own.mnemonic}
+              onChangeText={(t) => setOwn((o) => ({ ...o, mnemonic: t }))}
+              placeholder="The mnemonic"
+              placeholderTextColor={colors.faint}
+            />
+            <TextInput
+              style={[s.field, { minHeight: 90, textAlignVertical: 'top' }]}
+              value={own.notes}
+              onChangeText={(t) => setOwn((o) => ({ ...o, notes: t }))}
+              placeholder="What it means, or your story (optional)"
+              placeholderTextColor={colors.faint}
+              multiline
+            />
+            <Button label="Save" small onPress={saveOwn} disabled={!own.title.trim() || !own.mnemonic.trim()} />
+          </View>
+        ) : null}
+      </Card>
+
+      {due.length > 0 ? (
+        <Card tone="gold" style={{ marginTop: 14 }} onPress={() => navigation.navigate('Mnemonic', { id: due[0].id })}>
+          <Row style={{ gap: 12 }}>
+            <Ionicons name="alarm" size={20} color={colors.gold} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.itemTitle}>
+                {due.length} {due.length === 1 ? 'review is' : 'reviews are'} due
+              </Text>
+              <Muted>Review now, before the memory fades.</Muted>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Row>
+        </Card>
+      ) : null}
+
       <Heading style={{ marginTop: 30, marginBottom: 12 }}>My library</Heading>
       {state.mnemonics.length === 0 ? (
         <Card>
@@ -130,7 +209,13 @@ export function MedicineScreen({ navigation }: any) {
                     {m.mnemonic}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+                {isDue(m) ? (
+                  <View style={s.dueTag}>
+                    <Text style={s.dueTagText}>Review</Text>
+                  </View>
+                ) : (
+                  <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+                )}
               </Row>
             </Card>
           ))}
@@ -146,7 +231,7 @@ export function MedicineScreen({ navigation }: any) {
 
 /** One saved mnemonic, with a "test me" mode that hides the meanings. */
 export function MnemonicScreen({ navigation, route }: any) {
-  const { state, deleteMnemonic } = useStore();
+  const { state, deleteMnemonic, reviewMnemonic } = useStore();
   const m = state.mnemonics.find((x) => x.id === route.params.id);
   const [testing, setTesting] = useState(false);
   const [shown, setShown] = useState<number[]>([]);
@@ -198,6 +283,31 @@ export function MnemonicScreen({ navigation, route }: any) {
         <Text style={s.mnemonicText}>{m.mnemonic}</Text>
       </View>
 
+      {isDue(m) ? (
+        <Card tone="gold" style={{ marginTop: 14 }}>
+          <Row style={{ gap: 10, marginBottom: 6 }}>
+            <Ionicons name="alarm" size={18} color={colors.gold} />
+            <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15.5 }}>Time to review</Text>
+          </Row>
+          <Body>Try to recall everything first. Then tell the app how it went.</Body>
+          <Row style={{ gap: 10, marginTop: 14 }}>
+            <Button label="Forgot some" small variant="ghost" style={{ flex: 1 }} onPress={() => reviewMnemonic(m.id, false)} />
+            <Button label="Remembered" small style={{ flex: 1 }} onPress={() => reviewMnemonic(m.id, true)} />
+          </Row>
+        </Card>
+      ) : (
+        <Row style={{ gap: 8, marginTop: 14 }}>
+          <Ionicons name="calendar-outline" size={15} color={colors.muted} />
+          <Muted>
+            {nextReviewOf(m)
+              ? `Next review: ${new Date(nextReviewOf(m)!).toLocaleDateString()} (step ${(m.reviewStage ?? 0) + 1} of ${REVIEW_DAYS.length})`
+              : 'Learned — all three reviews are done.'}
+          </Muted>
+        </Row>
+      )}
+
+      {m.parts.length > 0 ? (
+      <>
       <Row style={{ justifyContent: 'space-between', marginTop: 26, marginBottom: 10 }}>
         <Heading>What each part means</Heading>
         <Pill
@@ -230,13 +340,24 @@ export function MnemonicScreen({ navigation, route }: any) {
         })}
       </View>
 
-      <Heading style={{ marginTop: 28, marginBottom: 10 }}>The story</Heading>
-      <Row style={s.location}>
-        <Ionicons name="location" size={16} color={colors.violet} />
-        <Text style={{ color: colors.text, fontWeight: '700', flex: 1, fontSize: 14.5 }}>{m.location}</Text>
-      </Row>
-      <Text style={s.story}>{m.story}</Text>
+      </>
+      ) : null}
 
+      {m.story ? (
+        <>
+          <Heading style={{ marginTop: 28, marginBottom: 10 }}>{m.location ? 'The story' : 'Notes'}</Heading>
+          {m.location ? (
+            <Row style={s.location}>
+              <Ionicons name="location" size={16} color={colors.violet} />
+              <Text style={{ color: colors.text, fontWeight: '700', flex: 1, fontSize: 14.5 }}>{m.location}</Text>
+            </Row>
+          ) : null}
+          <Text style={s.story}>{m.story}</Text>
+        </>
+      ) : null}
+
+      {m.imageKey.length > 0 ? (
+      <>
       <Heading style={{ marginTop: 28, marginBottom: 10 }}>What each image refers to</Heading>
       <View style={s.list}>
         {m.imageKey.map((p, i) => (
@@ -246,6 +367,8 @@ export function MnemonicScreen({ navigation, route }: any) {
           </View>
         ))}
       </View>
+      </>
+      ) : null}
 
       {m.tip ? (
         <Card style={{ marginTop: 22 }}>
@@ -257,9 +380,11 @@ export function MnemonicScreen({ navigation, route }: any) {
         </Card>
       ) : null}
 
-      <Muted style={{ marginTop: 22, textAlign: 'center' }}>
-        Made by AI. Check the facts against your textbook before you rely on them.
-      </Muted>
+      {m.parts.length > 0 ? (
+        <Muted style={{ marginTop: 22, textAlign: 'center' }}>
+          Made by AI. Check the facts against your textbook before you rely on them.
+        </Muted>
+      ) : null}
     </Screen>
   );
 }
@@ -282,6 +407,18 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#4E2522',
   },
+  field: {
+    backgroundColor: colors.bgSoft,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    color: colors.text,
+    fontSize: 15.5,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  dueTag: { backgroundColor: colors.gold, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
+  dueTagText: { color: colors.bg, fontWeight: '800', fontSize: 11.5 },
   itemTitle: { color: colors.text, fontSize: 15.5, fontWeight: '700', marginBottom: 2 },
   itemMnemonic: { color: colors.gold, fontSize: 13.5, fontFamily: fonts.serif },
   mnemonicBox: {

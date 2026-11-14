@@ -10,7 +10,7 @@ Built with Expo (React Native) and TypeScript.
 | **Home** | Your next lesson, your week, a 2-minute daily workout. |
 | **Learn** | A 10-lesson course for people who have never trained their memory. Each lesson ends with a small practice. Also "My Memory Palaces". |
 | **Train** | The ten World Memory Championships events, each with Starter, National, International, World and Custom levels. |
-| **Medicine** | AI mnemonic maker: type a topic, get a mnemonic, a story set in one place, and a key to every image. Saved to a library with a "Test me" mode. |
+| **Medicine** | AI mnemonic maker: type a topic, get a mnemonic, a story set in one place, and a key to every image. Saved to a library with a "Test me" mode. You can also write your own mnemonic without AI. Every saved item is scheduled for review after 1 day, 1 week and 1 month. |
 | **Progress** | Streak, personal bests, recent rounds, settings. |
 
 ### The ten events
