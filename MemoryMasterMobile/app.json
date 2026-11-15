@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "MemoryMaster",
+    "slug": "memorymaster",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dralis.memorymaster.mobile",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "buildNumber": "1"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "scheme": "memorymaster",
+    "backgroundColor": "#07090F",
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "platforms": [
+      "ios",
+      "web"
+    ]
+  }
+}

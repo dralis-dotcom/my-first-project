@@ -1,0 +1,52 @@
+name: Build MemoryMaster web app
+
+# Type-checks the iPhone + web app and builds the web version.
+# The built site is attached to the run as the "memorymaster-web" artifact.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'MemoryMasterMobile/**'
+      - '.github/workflows/mobile-web-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'MemoryMasterMobile/**'
+      - '.github/workflows/mobile-web-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPO_NO_TELEMETRY: 1
+    defaults:
+      run:
+        working-directory: MemoryMasterMobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: MemoryMasterMobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build the web app
+        run: npx expo export --platform web
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: memorymaster-web
+          path: MemoryMasterMobile/dist
+          if-no-files-found: error
