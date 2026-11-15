@@ -1,3 +1,4 @@
+import { FACE_KEYS } from './data/faceKeys';
 import { EVENT_DID, EVENT_WHO, FEMALE_NAMES, LAST_NAMES, MALE_NAMES, WORDS } from './data/banks';
 import type { Kind } from './data/disciplines';
 
@@ -26,9 +27,6 @@ export function shuffle<T>(arr: T[], rnd: () => number = Math.random): T[] {
 const randInt = (n: number) => Math.floor(Math.random() * n);
 
 // ---------- session content ----------
-
-/** Number of portrait photos available for each of 'm' (men) and 'w' (women). */
-export const PHOTOS_PER_GROUP = 100;
 
 export interface Person {
   photo: string; // key of the portrait photo, e.g. "m12" or "w40"
@@ -103,9 +101,7 @@ export function generate(config: SessionConfig): Content {
     }
     case 'names': {
       // every face is a different photo; first names match the photo group
-      const photos = shuffle(
-        ['m', 'w'].flatMap((g) => Array.from({ length: PHOTOS_PER_GROUP }, (_, i) => `${g}${i}`)),
-      );
+      const photos = shuffle(FACE_KEYS);
       const male = shuffle(MALE_NAMES);
       const female = shuffle(FEMALE_NAMES);
       const lasts = shuffle(LAST_NAMES);
